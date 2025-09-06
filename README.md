@@ -3,205 +3,257 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>S&P500 Futures — Pro Chart</title>
+  <title>To‑Do — Lofi Chill</title>
   <meta name="color-scheme" content="light dark" />
   <style>
     :root{
-      --bg:#0f1115; --fg:#eaeaea; --muted:#a9b1bd; --card:#171a22; --accent:#9ad0c2; --accent2:#b7b0e8;
-      --radius:18px; --shadow:0 10px 30px rgba(0,0,0,.35);
+      --bg: #f6f2ea;
+      --card: #ffffffcc;
+      --text: #2c2c2c;
+      --muted: #6b6b6b;
+      --accent: #9ad0c2;
+      --accent-2:#b7b0e8;
+      --danger: #ff6b6b;
+      --shadow: 0 8px 20px rgba(0,0,0,.08);
+      --radius: 16px;
+      --scale: 1;
     }
-    @media (prefers-color-scheme: light){
-      :root{ --bg:#f4f2ec; --fg:#1d2129; --muted:#5e6a78; --card:#ffffff; --shadow:0 8px 28px rgba(0,0,0,.08); }
+    @media (prefers-color-scheme: dark){
+      :root{
+        --bg: #0f1115;
+        --card: #1a1d23cc;
+        --text: #eaeaea;
+        --muted: #b7b7b7;
+        --accent: #7bd8c2;
+        --accent-2:#a79cf2;
+        --danger: #ff7d7d;
+        --shadow: 0 8px 22px rgba(0,0,0,.35);
+      }
     }
-    *{ box-sizing:border-box }
-    html,body{ height:100% }
-    body{ margin:0; background: radial-gradient(900px 600px at 120% 0%, var(--accent2) 0%, transparent 55%), radial-gradient(1000px 700px at -10% 10%, var(--accent) 0%, transparent 55%), var(--bg); color:var(--fg); font-family: ui-rounded, "SF Pro Rounded", Inter, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, sans-serif; display:grid; grid-template-rows:auto 1fr; padding:14px }
 
-    .shell{ width:100%; max-width:1200px; margin:0 auto; background: color-mix(in oklab, var(--card) 92%, transparent); border:1px solid color-mix(in oklab, var(--fg) 8%, transparent); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); backdrop-filter: blur(8px); }
+    html,body{ height:100%; }
+    body{
+      margin:0; font-family: ui-rounded, "SF Pro Rounded", "Nunito", system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: radial-gradient(800px 500px at 10% -10%, var(--accent) 0%, transparent 60%),
+                  radial-gradient(700px 600px at 110% 10%, var(--accent-2) 0%, transparent 60%),
+                  var(--bg);
+      color: var(--text);
+      display:grid; place-items:center;
+      padding: 10px;
+      transform: scale(var(--scale));
+      transform-origin: top center;
+    }
 
-    .toolbar{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; padding:10px; background:linear-gradient(180deg, color-mix(in oklab, var(--card) 70%, transparent), transparent); border-bottom:1px solid color-mix(in oklab, var(--fg) 8%, transparent); }
-    .group{ display:flex; gap:6px; align-items:center; background: color-mix(in oklab, var(--card) 50%, transparent); padding:6px; border-radius:12px; border:1px solid color-mix(in oklab, var(--fg) 10%, transparent) }
-    .label{ font-size:12px; color:var(--muted); padding:0 6px }
-    .btn{ cursor:pointer; border:1px solid color-mix(in oklab, var(--fg) 12%, transparent); background: color-mix(in oklab, var(--card) 40%, transparent); color:var(--fg); padding:8px 10px; border-radius:10px; font-weight:700; font-size:12px }
-    .btn:hover{ background: color-mix(in oklab, var(--card) 65%, transparent) }
-    .btn.active{ background: linear-gradient(135deg, var(--accent), var(--accent2)); color:#0f0f0f; border-color: transparent }
-    .select{ height:34px; border-radius:10px; border:1px solid color-mix(in oklab, var(--fg) 12%, transparent); background: color-mix(in oklab, var(--card) 40%, transparent); color:var(--fg); padding:0 10px; font-weight:600 }
-    .spacer{ flex:1 }
+    .wrap{ width:100%; max-width: 420px; }
+    .card{
+      background: var(--card);
+      backdrop-filter: blur(8px);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255,255,255,.15);
+      overflow: clip;
+    }
 
-    .chart-wrap{ position:relative; height:72vh; min-height:520px }
-    #tv{ position:absolute; inset:0 }
+    h1{
+      font-size: 18px;
+      margin:0;
+      font-weight:700;
+    }
 
-    .footer{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; justify-content:space-between; padding:8px 10px; border-top:1px solid color-mix(in oklab, var(--fg) 8%, transparent); color:var(--muted); font-size:12px }
-    .badge{ padding:6px 10px; border-radius:999px; background: color-mix(in oklab, var(--card) 55%, transparent); border:1px solid color-mix(in oklab, var(--fg) 10%, transparent) }
+    .sub{ color: var(--muted); font-size: 12px; margin-top:2px; }
+
+    .header{
+      display:flex; align-items:center; justify-content:space-between;
+      padding: 14px;
+    }
+
+    .logo{
+      width:32px; height:32px; border-radius: 10px; flex:0 0 auto;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      display:grid; place-items:center; color:#0f0f0f; font-size:18px;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.5);
+    }
+
+    .input{
+      display:flex; gap:6px; align-items:center; padding: 0 12px 12px;
+    }
+
+    .field{
+      flex:1; background:#00000010; border:1px solid #00000015; border-radius:10px; padding:8px;
+      display:flex; gap:8px; align-items:center;
+    }
+
+    .field input[type="text"]{
+      border:0; outline:0; background:transparent; color:var(--text); width:100%; font-size:13px;
+    }
+
+    .field input[type="date"]{
+      border:0; outline:0; background:transparent; color:var(--muted); font-size:11px;
+    }
+
+    .btn{
+      border:0; outline:0; cursor:pointer; border-radius:10px; padding:8px 10px; font-weight:600; font-size:12px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2)); color:#0f0f0f;
+      box-shadow: 0 3px 6px rgba(0,0,0,.1);
+    }
+
+    .list{ padding: 4px 8px 8px; }
+    .task{
+      display:grid; grid-template-columns: 20px 1fr auto; align-items:center; gap:6px;
+      background:#00000008; border:1px solid #00000015; border-radius:10px; padding:6px 8px; margin:6px 0;
+    }
+
+    .check{
+      --size: 14px; width:var(--size); height:var(--size); border-radius:4px; display:grid; place-items:center; cursor:pointer;
+      border:2px solid #00000033; position:relative;
+    }
+
+    .check input{ appearance:none; width:100%; height:100%; margin:0; outline:0; }
+    .check i{ position:absolute; width:8px; height:8px; border-radius:2px; transform: scale(0); transition:.15s ease; background: linear-gradient(135deg, var(--accent), var(--accent-2)); }
+    .task.done .check i{ transform: scale(1); }
+
+    .title{ outline:0; border:0; background:transparent; color:var(--text); font-size:13px; padding:2px 4px; border-radius:6px; }
+    .meta{ color:var(--muted); font-size:10px; }
+
+    .footer{
+      display:flex; gap:6px; align-items:center; justify-content:space-between;
+      padding: 6px 8px 10px;
+      font-size:10px; color:var(--muted);
+    }
+
+    .filters{ display:flex; gap:4px; }
+    .pill{ padding:4px 8px; border-radius:999px; background:#00000012; border:1px solid #00000018; font-size:10px; cursor:pointer; }
+    .pill.active{ background: linear-gradient(135deg, var(--accent), var(--accent-2)); color:#0f0f0f; border-color: transparent; }
+
+      /* Scala responsiva/override per Notion */
+    body{ zoom: var(--scale); }
+    body.compact .wrap{ max-width: 520px; }
+    body.compact h1{ font-size:20px; }
+    body.compact .btn{ padding:8px 12px; font-size:13px; }
+    body.compact .task{ padding:8px 10px; margin:6px; }
   </style>
 </head>
 <body>
-  <div class="shell">
-    <div class="toolbar">
-      <span class="label">Strumento</span>
-      <select class="select" id="symbol">
-        <option value="CME_MINI:ES1!">E‑mini S&P 500 (continuo) — ES1!</option>
-        <option value="CME_MINI:ESU2025">E‑mini S&P 500 (Set 2025) — ESU2025</option>
-        <option value="CME_MINI:ESH2026">E‑mini S&P 500 (Mar 2026) — ESH2026</option>
-        <option value="SP:SPX">Indice S&P 500 — SPX</option>
-        <option value="CME_MINI:NQ1!">E‑mini Nasdaq‑100 — NQ1!</option>
-        <option value="CBOT_MINI:YM1!">Mini Dow — YM1!</option>
-        <option value="CME:VIX1!">VIX Futures — VIX1!</option>
-      </select>
-
-      <span class="label">TF</span>
-      <div class="group" id="tf">
-        <button class="btn" data-int="1">1m</button>
-        <button class="btn" data-int="3">3m</button>
-        <button class="btn active" data-int="5">5m</button>
-        <button class="btn" data-int="15">15m</button>
-        <button class="btn" data-int="60">1H</button>
-        <button class="btn" data-int="240">4H</button>
-        <button class="btn" data-int="D">D</button>
-        <button class="btn" data-int="W">W</button>
+  <div class="wrap">
+    <div class="card">
+      <div class="header">
+        <div style="display:flex;gap:8px;align-items:center;">
+          <div class="logo">🪴</div>
+          <div>
+            <h1>To‑Do — Lofi Chill</h1>
+            <div class="sub">Minimal, morbido, con suoni opzionali ✨</div>
+          </div>
+        </div>
       </div>
 
-      <span class="label">Layout</span>
-      <div class="group" id="layout">
-        <button class="btn active" data-layout="single">Singolo</button>
-        <button class="btn" data-layout="split">Split 2×</button>
+      <div class="input">
+        <div class="field">
+          <input id="newTitle" type="text" placeholder="Aggiungi una nuova task…" />
+          <input id="newDate" type="date" />
+        </div>
+        <button class="btn" id="addBtn">Aggiungi</button>
       </div>
 
-      <div class="group" id="studies">
-        <span class="label">Studi</span>
-        <button class="btn" data-study="VWAP@tv-basicstudies">VWAP</button>
-        <button class="btn" data-study="MASimple@tv-basicstudies?length=20">SMA20</button>
-        <button class="btn" data-study="MASimple@tv-basicstudies?length=50">SMA50</button>
-        <button class="btn" data-study="Volume@tv-basicstudies">Volume</button>
-        <button class="btn" data-study="RSI@tv-basicstudies">RSI</button>
-        <button class="btn" data-study="MACD@tv-basicstudies">MACD</button>
-        <button class="btn" data-clear>Reset</button>
-      </div>
-
-      <div class="spacer"></div>
-
-      <div class="group">
-        <span class="label">Tema</span>
-        <select class="select" id="theme">
-          <option value="dark" selected>Dark</option>
-          <option value="light">Light</option>
-        </select>
-      </div>
-
-    </div>
-
-    <div class="chart-wrap"><div id="tv"></div></div>
-
-    <div class="footer">
-      <div>
-        <span class="badge">Futures: 
-          <strong>ES</strong> su <strong>CME</strong> • Orario Europa/Roma • Dati via TradingView</span>
-      </div>
-      <div>
-        <span class="badge">Suggerimento: doppio click per fullscreen nel frame Notion</span>
+      <div class="list" id="list"></div>
+      <div class="footer">
+        <div class="filters" id="filters">
+          <button class="pill active" data-filter="all">Tutte</button>
+          <button class="pill" data-filter="active">Attive</button>
+          <button class="pill" data-filter="done">Completate</button>
+        </div>
+        <div id="stats">0 attive • 0 totali</div>
       </div>
     </div>
   </div>
 
-  <!-- TradingView Library -->
-  <script src="https://s3.tradingview.com/tv.js"></script>
+  <script>(function(){try{const p=new URLSearchParams(location.search);const s=parseFloat(p.get('scale')||'1');if(!Number.isNaN(s)&&s>0&&s<=1.5){document.documentElement.style.setProperty('--scale',String(s));}if(p.get('density')==='compact'){document.body.classList.add('compact');}}catch(e){}})();</script>
   <script>
-    // ===============================
-    //  S&P500 Futures Pro Chart Widget
-    // ===============================
     const $ = (s, el=document) => el.querySelector(s);
     const $$ = (s, el=document) => [...el.querySelectorAll(s)];
 
-    // URL params per avvio rapido: ?symbol=CME_MINI:ES1!&interval=5&theme=dark
-    const P = new URLSearchParams(location.search);
+    const KEY = 'lofi_todo_v2';
+    const load = () => JSON.parse(localStorage.getItem(KEY) || '[]');
+    const save = (items) => localStorage.setItem(KEY, JSON.stringify(items));
 
-    const state = {
-      symbol: P.get('symbol') || 'CME_MINI:ES1!',
-      interval: P.get('interval') || '5',
-      theme: P.get('theme') || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'),
-      studies: []
+    let items = load();
+    let filter = 'all';
+
+    const ui = {
+      list: $('#list'),
+      stats: $('#stats'),
+      newTitle: $('#newTitle'),
+      newDate: $('#newDate'),
+      addBtn: $('#addBtn'),
+      filters: $('#filters')
     };
 
-    // UI init
-    $('#symbol').value = state.symbol;
-    $('#theme').value = state.theme;
-    $$('#tf .btn').forEach(b=>{ b.classList.toggle('active', b.dataset.int===String(state.interval)); });
+    function render(){
+      ui.list.innerHTML = '';
+      const filtered = items.filter(it => filter==='all' || (filter==='active' && !it.done) || (filter==='done' && it.done));
 
-    let widget = null;
+      for(const it of filtered){ ui.list.appendChild(taskNode(it)); }
 
-    function buildStudies(){
-      return state.studies.slice();
+      const activeCount = items.filter(i=>!i.done).length;
+      ui.stats.textContent = `${activeCount} attive • ${items.length} totali`;
     }
 
-    function rebuild(){
-      if(widget){ $('#tv').innerHTML = ''; widget = null; }
+    function taskNode(it){
+      const node = document.createElement('div');
+      node.className = 'task' + (it.done ? ' done' : '');
+      node.dataset.id = it.id;
 
-      widget = new TradingView.widget({
-        symbol: state.symbol,
-        interval: state.interval,
-        container_id: 'tv',
-        timezone: 'Europe/Rome',
-        theme: state.theme,
-        style: '1', // candele
-        locale: 'it',
-        toolbar_bg: 'rgba(0,0,0,0)',
-        hide_top_toolbar: false,
-        hide_legend: false,
-        hide_side_toolbar: false,
-        withdateranges: true,
-        allow_symbol_change: true,
-        details: true,
-        hotlist: true,
-        calendar: true,
-        studies: buildStudies(),
-        study_count_limit: 20,
-        enable_publishing: false,
-        autosize: true,
-        support_host: 'https://www.tradingview.com'
-      });
+      node.innerHTML = `
+        <label class="check"><input type="checkbox" ${it.done ? 'checked' : ''} /><i></i></label>
+        <div>
+          <div class="title" contenteditable="true"></div>
+          <div class="meta">${it.date ? `⏰ ${fmtDate(it.date)}` : ''}</div>
+        </div>
+        <button style="background:none;border:none;color:#f77;cursor:pointer;font-size:12px;">✖</button>`;
+
+      $('.title', node).textContent = it.title;
+
+      $('input', node).addEventListener('change', e=>{ it.done = e.target.checked; save(items); render(); });
+      $('.title', node).addEventListener('blur', e=>{ it.title = e.target.textContent.trim() || 'Senza titolo'; save(items); });
+      $('button', node).addEventListener('click', ()=>{ items = items.filter(x=>x.id!==it.id); save(items); render(); });
+
+      return node;
     }
 
-    // Controls
-    $('#symbol').addEventListener('change', e=>{ state.symbol = e.target.value; rebuild(); });
-    $('#theme').addEventListener('change', e=>{ state.theme = e.target.value; rebuild(); });
+    const fmtDate = (d) => { try{ const dt = new Date(d); return dt.toLocaleDateString('it-IT', { day:'2-digit', month:'2-digit' }); }catch{ return d; } }
+    const uid = () => Math.random().toString(36).slice(2,9);
 
-    $('#tf').addEventListener('click', e=>{
-      const b = e.target.closest('button'); if(!b) return;
-      $$('#tf .btn').forEach(x=>x.classList.remove('active'));
-      b.classList.add('active');
-      state.interval = b.dataset.int; rebuild();
+    function addTask(){
+      const title = ui.newTitle.value.trim();
+      if(!title) return;
+      const date = ui.newDate.value || '';
+      const it = { id: uid(), title, done:false, date, created: new Date().toISOString().slice(0,10) };
+      items.unshift(it); save(items);
+      ui.newTitle.value=''; ui.newDate.value='';
+      render();
+    }
+
+    ui.addBtn.addEventListener('click', addTask);
+    ui.newTitle.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); addTask(); }});
+
+    ui.filters.addEventListener('click', e=>{
+      const b = e.target.closest('.pill'); if(!b) return;
+      $$('.pill', ui.filters).forEach(p=>p.classList.remove('active'));
+      b.classList.add('active'); filter = b.dataset.filter; render();
     });
 
-    // Studi (aggiungi/rimuovi)
-    $('#studies').addEventListener('click', e=>{
-      const b = e.target.closest('button'); if(!b) return;
-      if(b.hasAttribute('data-clear')){ state.studies = []; rebuild(); return; }
-      const st = b.dataset.study;
-      const idx = state.studies.indexOf(st);
-      if(idx === -1){ state.studies.push(st); b.classList.add('active'); }
-      else { state.studies.splice(idx,1); b.classList.remove('active'); }
-      rebuild();
-    });
+    if(items.length===0){
+      items = [
+        { id: uid(), title:'Respira e metti un lo‑fi beat 🎧', done:false, date:'', created: new Date().toISOString().slice(0,10) }
+      ];
+      save(items);
+    }
 
-    // Layout demo: per Notion è più stabile ricreare 1 o 2 grafici nella stessa istanza
-    $('#layout').addEventListener('click', e=>{
-      const b = e.target.closest('button'); if(!b) return;
-      $$('#layout .btn').forEach(x=>x.classList.remove('active'));
-      b.classList.add('active');
-      const mode = b.dataset.layout;
-      if(mode === 'single'){ document.querySelector('.chart-wrap').style.height = '72vh'; rebuild(); }
-      else {
-        // split: due grafici uno sotto l'altro con tf diversi (5m + D)
-        const wrap = $('.chart-wrap');
-        wrap.innerHTML = '<div id="tvA" style="position:absolute; inset:0 0 50% 0;"></div><div id="tvB" style="position:absolute; inset:50% 0 0 0; border-top:1px solid rgba(255,255,255,.08)"></div>';
-        const A = new TradingView.widget({ symbol: state.symbol, interval: state.interval, container_id: 'tvA', timezone:'Europe/Rome', theme: state.theme, locale:'it', style:'1', studies: buildStudies(), autosize:true, hide_side_toolbar:false, withdateranges:true, support_host:'https://www.tradingview.com' });
-        const B = new TradingView.widget({ symbol: state.symbol, interval: 'D', container_id: 'tvB', timezone:'Europe/Rome', theme: state.theme, locale:'it', style:'1', studies: ['Volume@tv-basicstudies','MASimple@tv-basicstudies?length=200'], autosize:true, hide_side_toolbar:false, withdateranges:true, support_host:'https://www.tradingview.com' });
-        return; // evita rebuild standard
-      }
-    });
+    // Leggi parametro URL "scale" per ridimensionamento
+    const params = new URLSearchParams(location.search);
+    const scale = parseFloat(params.get('scale'));
+    if(!isNaN(scale)) document.documentElement.style.setProperty('--scale', scale);
 
-    // Avvio
-    rebuild();
+    render();
   </script>
 </body>
 </html>
