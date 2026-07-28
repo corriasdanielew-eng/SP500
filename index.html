@@ -1,0 +1,1581 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<title>Pinza Freno Posteriore — Kawasaki Ninja 650 (EX650, ABS) — Guida Interattiva</title>
+<meta name="color-scheme" content="dark" />
+<style>
+  /* ==========================================================
+     STILE — estetica "officina": sfondo antracite, UI compatta
+     con touch target grandi (uso con guanti), leggibile a distanza
+     ========================================================== */
+  :root{
+    --bg: #12161b;
+    --bg2: #171c22;
+    --panel: #1b2129ee;
+    --panel-solid: #1b2129;
+    --line: #2a323c;
+    --text: #eef2f6;
+    --muted: #9aa7b4;
+    --accent: #ffb020;
+    --accent2: #57c2ff;
+    --danger: #ff5a5a;
+    --danger-bg: #3a1414;
+    --warn: #ffd23f;
+    --warn-bg: #3a3114;
+    --ok: #4ade80;
+    --radius: 12px;
+    --gA: #b9c0c9; --gB: #4a5561; --gC: #e2932f; --gD: #c25a3a; --gE: #9c7a5c; --gF: #33b3a6;
+  }
+  *{ box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html,body{ height:100%; margin:0; overscroll-behavior:none; }
+  body{
+    background: radial-gradient(1200px 700px at 20% -10%, #1c2430 0%, transparent 60%),
+                radial-gradient(1000px 800px at 100% 110%, #1a2027 0%, transparent 55%),
+                var(--bg);
+    color: var(--text);
+    font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, system-ui, sans-serif;
+    overflow: hidden;
+    touch-action: none;
+  }
+  button, input, select { font-family: inherit; }
+
+  #app{ position:fixed; inset:0; display:flex; flex-direction:column; }
+
+  /* ---------- TOPBAR ---------- */
+  #topbar{
+    display:flex; align-items:center; gap:8px;
+    padding: 8px 10px; background: var(--panel); border-bottom:1px solid var(--line);
+    z-index: 30; flex-wrap: wrap;
+  }
+  #topbar h1{
+    font-size: 14px; margin:0; font-weight:700; letter-spacing:.2px; color:var(--text);
+    flex: 1 1 auto; min-width: 140px;
+    white-space: nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  #topbar h1 small{ display:block; font-weight:400; color: var(--muted); font-size: 11px; }
+  .iconbtn{
+    background: var(--bg2); color: var(--text); border:1px solid var(--line);
+    border-radius: 10px; min-width:42px; min-height:42px; padding:6px 10px;
+    font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;
+  }
+  .iconbtn:active{ background:#232b34; }
+  .iconbtn.on{ border-color: var(--accent2); color: var(--accent2); }
+
+  /* ---------- VIEWPORT ---------- */
+  #viewport{ position:relative; flex: 1 1 auto; min-height: 0; }
+  #c{ position:absolute; inset:0; width:100%; height:100%; display:block; touch-action:none; }
+  #leaderSvg{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none; overflow:visible; }
+  #leaderSvg line{ stroke: rgba(255,255,255,.35); stroke-width:1.2; }
+  #labelsLayer{ position:absolute; inset:0; pointer-events:none; }
+  .lbl{
+    position:absolute; transform: translate(-50%,-50%); pointer-events:auto; cursor:pointer;
+    background: rgba(15,18,22,.82); border:1px solid var(--line); border-radius:8px;
+    padding: 3px 7px; font-size: 11px; white-space:nowrap; color: var(--text);
+    box-shadow: 0 2px 8px rgba(0,0,0,.35);
+    max-width: 46vw; overflow:hidden; text-overflow:ellipsis;
+  }
+  .lbl small{ color: var(--muted); display:block; font-size:9px; }
+  .lbl.focus{ border-color: var(--accent); color: var(--accent); }
+
+  #tooltip{
+    position:absolute; pointer-events:none; background: rgba(0,0,0,.85); color:#fff;
+    padding: 4px 8px; border-radius: 6px; font-size: 12px; transform: translate(12px, 12px);
+    z-index: 20; border: 1px solid var(--line);
+  }
+  #tooltip.hidden{ display:none; }
+
+  #crosshairHint{
+    position:absolute; left:10px; bottom:10px; font-size:11px; color: var(--muted);
+    background: rgba(0,0,0,.35); padding:4px 8px; border-radius:8px; pointer-events:none;
+  }
+
+  /* ---------- FILTRI GRUPPO (chip in overlay sul viewport) ---------- */
+  #groupFilters{
+    position:absolute; top:8px; left:8px; display:flex; flex-direction:column; gap:6px; z-index:15;
+  }
+  .chip{
+    display:flex; align-items:center; gap:6px; background: rgba(20,24,29,.85);
+    border:1px solid var(--line); border-radius: 20px; padding: 6px 10px 6px 8px;
+    font-size:11px; color: var(--text); cursor:pointer; min-height:30px; user-select:none;
+  }
+  .chip .dot{ width:12px; height:12px; border-radius:50%; flex:0 0 auto; border:1px solid rgba(0,0,0,.3); }
+  .chip.off{ opacity:.35; }
+
+  /* ---------- SIDE PANEL ----------
+     Ancorato a #mainRow (non al viewport): #mainRow parte già sotto la topbar,
+     quindi il drawer non copre mai i pulsanti della topbar su mobile. */
+  #sidePanel{
+    position:absolute; top:0; right:0; height:100%; width: 340px; max-width: 92vw;
+    background: var(--panel); border-left:1px solid var(--line);
+    transform: translateX(100%); transition: transform .25s ease;
+    z-index: 40; display:flex; flex-direction:column;
+  }
+  #sidePanel.open{ transform: translateX(0); }
+  #sidePanel .sp-head{
+    display:flex; align-items:center; justify-content:space-between; padding:12px 14px;
+    border-bottom:1px solid var(--line);
+  }
+  #sidePanel .sp-head h2{ margin:0; font-size:15px; }
+  #sidePanel .sp-body{ padding: 14px; overflow-y:auto; flex:1; }
+  #sidePanel .sp-row{ margin-bottom: 12px; }
+  #sidePanel .sp-label{ font-size:10px; text-transform:uppercase; letter-spacing:.5px; color: var(--muted); margin-bottom:3px; }
+  #sidePanel .sp-value{ font-size:14px; line-height:1.4; }
+  #sidePanel .sp-id{ display:inline-block; background: var(--bg2); border:1px solid var(--line); border-radius:6px; padding:1px 7px; font-size:11px; color:var(--accent2); }
+  .badge{ display:inline-block; padding:4px 9px; border-radius:8px; font-size:11px; font-weight:700; margin-top:4px; margin-right:6px;}
+  .badge.danger{ background: var(--danger-bg); color: var(--danger); border:1px solid var(--danger); }
+  .badge.warn{ background: var(--warn-bg); color: var(--warn); border:1px solid var(--warn); }
+  .badge.group{ background: var(--bg2); border:1px solid var(--line); color: var(--text); }
+
+  /* ---------- BOTTOM BAR ---------- */
+  #bottomBar{
+    background: var(--panel); border-top:1px solid var(--line); z-index:30;
+    padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+  }
+  .modeTabs{ display:flex; gap:6px; margin-bottom:8px; }
+  .modeTabs button{
+    flex:1; background: var(--bg2); color: var(--muted); border:1px solid var(--line);
+    border-radius:10px; padding:9px 6px; font-size:12px; font-weight:600; cursor:pointer; min-height:40px;
+  }
+  .modeTabs button.active{ background:#233042; color: var(--accent2); border-color: var(--accent2); }
+
+  #explodePane, #guidedPane{ display:none; }
+  #explodePane.active, #guidedPane.active{ display:block; }
+
+  .rowline{ display:flex; align-items:center; gap:10px; }
+  .rowline label{ font-size:11px; color: var(--muted); white-space:nowrap; }
+  input[type=range]{ flex:1; accent-color: var(--accent2); height: 34px; }
+
+  .guidedTop{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:6px; }
+  .stepPill{ font-size:11px; color: var(--muted); background:var(--bg2); border:1px solid var(--line); border-radius:20px; padding:5px 10px; }
+  .navBtns{ display:flex; gap:8px; }
+  .navBtns button{
+    background: var(--bg2); color: var(--text); border:1px solid var(--line); border-radius:10px;
+    padding: 10px 14px; font-size:14px; font-weight:700; min-height:44px; cursor:pointer;
+  }
+  .navBtns button:disabled{ opacity:.3; }
+  .toggleDir{
+    display:flex; border:1px solid var(--line); border-radius:10px; overflow:hidden; min-height:40px;
+  }
+  .toggleDir button{ flex:1; background:var(--bg2); color:var(--muted); border:none; font-size:12px; font-weight:700; cursor:pointer; }
+  .toggleDir button.active{ background:#233042; color:var(--accent2); }
+
+  #stepCard{
+    margin-top:8px; background: var(--bg2); border:1px solid var(--line); border-radius:10px; padding:10px 12px;
+    max-height: 34vh; overflow-y:auto;
+  }
+  #stepCard h3{ margin:0 0 4px; font-size:14px; }
+  #stepCard .meta{ display:grid; grid-template-columns: auto 1fr; gap:3px 8px; font-size:12px; margin-top:6px; }
+  #stepCard .meta b{ color: var(--muted); font-weight:600; }
+  .callout{ margin-top:8px; border-radius:8px; padding:8px 10px; font-size:12px; line-height:1.4; }
+  .callout.warn{ background: var(--warn-bg); border:1px solid var(--warn); color:#ffe9a3; }
+  .callout.danger{ background: var(--danger-bg); border:1px solid var(--danger); color:#ffb3b3; }
+
+  /* ---------- MODAL INFO ---------- */
+  #infoModal{
+    position:fixed; inset:0; background: rgba(0,0,0,.6); z-index:60; display:none;
+    align-items:center; justify-content:center; padding: 16px;
+  }
+  #infoModal.open{ display:flex; }
+  #infoModal .box{
+    background: var(--panel-solid); border:1px solid var(--line); border-radius:14px;
+    max-width: 640px; width:100%; max-height: 82vh; overflow-y:auto; padding: 18px 20px;
+  }
+  #infoModal h2{ margin-top:0; font-size:17px; }
+  #infoModal table{ width:100%; border-collapse: collapse; font-size:13px; margin: 8px 0 16px; }
+  #infoModal td, #infoModal th{ border-bottom:1px solid var(--line); padding:6px 4px; text-align:left; }
+  #infoModal th{ color: var(--muted); font-weight:600; font-size:11px; text-transform:uppercase; }
+  #infoModal p{ font-size:13px; line-height:1.5; color: var(--text); }
+  #infoModal .closeBtn{ float:right; }
+
+  #disclaimerBar{
+    background:#241b0c; border-top:1px solid #5a4413; color:#ffd98a; font-size:11px;
+    padding: 6px 10px; text-align:center; line-height:1.4;
+  }
+  #disclaimerBar b{ color: var(--warn); }
+
+  @media (min-width: 900px){
+    #sidePanel{ position:relative; transform:none; width: 360px; height:auto; box-shadow:none; }
+    #app{ flex-direction: column; }
+    #mainRow{ display:flex; flex:1; min-height:0; }
+    #viewport{ flex:1; }
+  }
+  #mainRow{ display:flex; flex:1; min-height:0; flex-direction: column-reverse; position:relative; }
+  @media (min-width: 900px){ #mainRow{ flex-direction: row; } }
+
+  .hidden{ display:none !important; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <header id="topbar">
+    <h1>Pinza freno posteriore — Ninja 650 EX650 ABS
+      <small>Guida esplosa interattiva — Nissin monopistoncino flottante</small>
+    </h1>
+    <button class="iconbtn" id="btnLang" title="Lingua etichette / pannello">IT/EN</button>
+    <button class="iconbtn" id="btnLabels" title="Mostra/nascondi etichette">🏷️</button>
+    <button class="iconbtn" id="btnInfo" title="Dati tecnici e coppie">ℹ️</button>
+    <button class="iconbtn" id="btnFullscreen" title="Schermo intero">⛶</button>
+  </header>
+
+  <div id="mainRow">
+    <div id="viewport">
+      <canvas id="c"></canvas>
+      <svg id="leaderSvg"></svg>
+      <div id="labelsLayer"></div>
+      <div id="tooltip" class="hidden"></div>
+      <div id="crosshairHint">Trascina per ruotare · Pizzica/rotella per zoom · Tocca un pezzo per i dettagli</div>
+
+      <div id="groupFilters"></div>
+    </div>
+
+    <aside id="sidePanel">
+      <div class="sp-head">
+        <h2>Dettaglio pezzo</h2>
+        <button class="iconbtn" id="btnCloseSide">✕</button>
+      </div>
+      <div class="sp-body" id="sideBody">
+        <p style="color:var(--muted); font-size:13px;">Tocca un componente nel modello 3D, oppure usa la <b>Sequenza guidata</b> qui sotto, per vedere qui nome, funzione, attrezzo e coppia di serraggio.</p>
+      </div>
+    </aside>
+  </div>
+
+  <div id="bottomBar">
+    <div class="modeTabs">
+      <button id="tabExplode" class="active">💥 Vista esplosa</button>
+      <button id="tabGuided">📋 Sequenza guidata</button>
+      <button id="tabReset">↺ Reset vista</button>
+    </div>
+
+    <div id="explodePane" class="active">
+      <div class="rowline">
+        <label>Montato</label>
+        <input type="range" id="explodeSlider" min="0" max="100" value="0" />
+        <label>Esploso</label>
+      </div>
+    </div>
+
+    <div id="guidedPane">
+      <div class="guidedTop">
+        <div class="toggleDir">
+          <button id="btnDirSmontaggio" class="active">Smontaggio ⟶</button>
+          <button id="btnDirRimontaggio">⟵ Rimontaggio</button>
+        </div>
+        <span class="stepPill" id="stepPill">Step 1 / 15</span>
+      </div>
+      <div class="navBtns">
+        <button id="btnPrev">◀ Indietro</button>
+        <button id="btnPlay">▶ Avanti</button>
+      </div>
+      <div id="stepCard"></div>
+    </div>
+  </div>
+
+  <div id="disclaimerBar">
+    ⚠️ <b>Disclaimer:</b> coppie di serraggio, attrezzi e note sono <b>indicativi</b>. Confermare sempre i valori sul <b>manuale d'officina Kawasaki ufficiale</b> (Ninja 650 / EX650, ABS) prima di intervenire sulla moto.
+  </div>
+</div>
+
+<div id="infoModal">
+  <div class="box">
+    <button class="iconbtn closeBtn" id="btnCloseInfo">✕</button>
+    <h2>Dati tecnici di riferimento</h2>
+    <p>Valori indicativi per pianificare l'intervento. <b>Verificare sempre sul manuale d'officina Kawasaki ufficiale</b> prima di serrare qualsiasi elemento.</p>
+    <table>
+      <tr><th>Elemento</th><th>Coppia indicativa</th></tr>
+      <tr><td>Viti fissaggio pinza (B6)</td><td>~25 N·m</td></tr>
+      <tr><td>Perno di ritegno pastiglie (C3)</td><td>~17 N·m</td></tr>
+      <tr><td>Bullone banjo (D2)</td><td>~25 N·m</td></tr>
+      <tr><td>Valvola di spurgo (A5)</td><td>~7,8 N·m — delicata, si spana facilmente</td></tr>
+      <tr><td>Viti disco freno (E2)</td><td>~27 N·m + frenafiletti</td></tr>
+      <tr><td>Dado asse ruota posteriore</td><td>~108 N·m</td></tr>
+    </table>
+    <p>
+      <b>Liquido freni:</b> DOT 4 — corrosivo per la vernice, coprire le superfici verniciate.<br/>
+      <b>Materiale d'attrito pastiglie:</b> spessore nuovo ~5 mm, limite di servizio 1 mm.<br/>
+      <b>Rondelle di rame banjo (D3/D4):</b> sempre monouso, sostituire ad ogni apertura del banjo.
+    </p>
+    <p style="color:var(--muted); font-size:12px;">Questa applicazione è un ausilio didattico/visivo. Non sostituisce il manuale d'officina ufficiale, in particolare per coppie di serraggio, procedure di spurgo e sicurezza.</p>
+  </div>
+</div>
+
+<!-- ============================================================
+     LIBRERIE — Three.js r128 (build classica, non-module) da CDN
+     Nessun bundler/npm richiesto: funziona anche aprendo il file
+     direttamente nel browser (file://).
+     ============================================================ -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+<script>
+/* ================================================================================
+   PARTE 1 — DATI DEI PEZZI
+   Struttura JSON-like centralizzata: modifica qui nomi, coppie, attrezzi e note
+   man mano che verifichi le informazioni sul manuale d'officina Kawasaki ufficiale.
+   Ogni pezzo ha: id, gruppo, nomi IT/EN, funzione, attrezzo, coppia, note,
+   flag "monouso" e flag "orientamento critico".
+   ================================================================================ */
+
+const GROUPS = {
+  A: { it:'Corpo pinza',            en:'Caliper body',        color:0xb9c0c9 },
+  B: { it:'Staffa e scorrimento',   en:'Bracket & sliding',   color:0x4a5561 },
+  C: { it:'Pastiglie e ritegno',    en:'Pads & retention',    color:0xe2932f },
+  D: { it:'Linea idraulica',        en:'Hydraulic line',      color:0xc25a3a },
+  E: { it:'Disco e ABS',            en:'Disc & ABS',          color:0x9c7a5c },
+  F: { it:'Comando (pedale/pompa)', en:'Actuation (pedal/MC)',color:0x33b3a6 },
+};
+
+const PART_DEFS = {
+  // ---------------- GRUPPO A — Corpo pinza ----------------
+  A1: { group:'A', it:'Corpo pinza', en:'Caliper body',
+    func_it:'Blocco in alluminio a forma di "C" che abbraccia il disco; contiene il pistoncino e scorre sui perni della staffa.',
+    func_en:'Aluminium "C"-shaped block that straddles the disc; houses the piston and slides on the bracket pins.',
+    tool_it:'Nessuno per la rimozione (dopo aver tolto viti pinza e sfilato dai perni)', tool_en:'None to remove (after caliper bolts and slide pins)',
+    torque:null, single:false, orient:false,
+    notes_it:'Logo NISSIN sul fianco esterno. Maneggiare con cura: non far gravare il peso sul tubo flessibile.',
+    notes_en:'NISSIN logo on outer face. Handle with care: never let it hang from the brake hose.' },
+  A2: { group:'A', it:'Pistoncino', en:'Piston',
+    func_it:'Cilindro cavo che spinge la pastiglia lato pistoncino contro il disco sotto pressione idraulica.',
+    func_en:'Hollow cylinder that pushes the piston-side pad against the disc under hydraulic pressure.',
+    tool_it:'Aria compressa a bassa pressione o estrattore dedicato', tool_en:'Low-pressure compressed air or dedicated puller',
+    torque:null, single:false, orient:false,
+    notes_it:'Solo in revisione completa. Attenzione alle dita: non usare mai aria ad alta pressione.',
+    notes_en:'Full overhaul only. Keep fingers clear: never use high-pressure air.' },
+  A3: { group:'A', it:'Anello di tenuta pistoncino', en:'Piston seal',
+    func_it:'O-ring quadro alloggiato in una gola interna del cilindro: tiene la pressione e richiama leggermente il pistoncino ("roll-back").',
+    func_en:'Square-section seal seated in an internal bore groove: seals pressure and provides slight piston roll-back.',
+    tool_it:'Attrezzo in plastica (non metallico)', tool_en:'Plastic (non-metallic) pick',
+    torque:null, single:true, orient:false,
+    notes_it:'Sostituire sempre con kit guarnizioni nuovo in revisione completa.', notes_en:'Always replace with a fresh seal kit on full overhaul.' },
+  A4: { group:'A', it:'Parapolvere pistoncino', en:'Dust seal',
+    func_it:'Anello in gomma posto più esterno del seal di tenuta: impedisce a polvere e acqua di entrare nel cilindro.',
+    func_en:'Rubber ring outboard of the piston seal: keeps dust and water out of the bore.',
+    tool_it:'Attrezzo in plastica (non metallico)', tool_en:'Plastic (non-metallic) pick',
+    torque:null, single:true, orient:false,
+    notes_it:'Sostituire sempre insieme all\'anello di tenuta.', notes_en:'Always replace together with the piston seal.' },
+  A5: { group:'A', it:'Valvola di spurgo', en:'Bleed nipple / valve',
+    func_it:'Nipplo conico filettato sulla parte alta della pinza, usato per spurgare l\'aria e sostituire il liquido freni.',
+    func_en:'Threaded conical nipple on top of the caliper, used to bleed air and change brake fluid.',
+    tool_it:'Chiave per spurgo 8 mm + tubetto trasparente', tool_en:'8 mm bleed spanner + clear tubing',
+    torque:'~7,8 N·m', single:false, orient:false,
+    notes_it:'Molto delicata: si spana facilmente, non forzare.', notes_en:'Very delicate: strips easily, do not overtighten.' },
+  A6: { group:'A', it:'Cappuccio valvola spurgo', en:'Bleed nipple cap',
+    func_it:'Cappuccio in gomma che protegge la valvola di spurgo da polvere e umidità.',
+    func_en:'Rubber cap protecting the bleed nipple from dust and moisture.',
+    tool_it:'A mano', tool_en:'By hand', torque:null, single:false, orient:false,
+    notes_it:'Primo pezzo da rimuovere per accedere alla valvola.', notes_en:'First part removed to access the bleed valve.' },
+
+  // ---------------- GRUPPO B — Staffa e scorrimento ----------------
+  B1: { group:'B', it:'Staffa portapinza', en:'Caliper bracket / carrier',
+    func_it:'Supporto fissato al forcellone: su di esso scorre assialmente il corpo pinza tramite i perni di scorrimento.',
+    func_en:'Carrier bolted to the swingarm: the caliper body slides axially on it via the slide pins.',
+    tool_it:'A mano (dopo aver svitato le viti pinza)', tool_en:'By hand (after removing caliper bolts)',
+    torque:null, single:false, orient:false,
+    notes_it:'Verificare che scorra libera sui perni, senza punti duri.', notes_en:'Check it slides freely on the pins, with no binding.' },
+  B2: { group:'B', it:'Perno di scorrimento superiore', en:'Upper slide pin',
+    func_it:'Perno filettato con stelo liscio: consente al corpo pinza di "fluttuare" assialmente e autocentrarsi sul disco.',
+    func_en:'Threaded pin with a smooth shank: lets the caliper body float axially and self-center on the disc.',
+    tool_it:'Chiave esagonale (verificare misura)', tool_en:'Hex key (check size)',
+    torque:null, single:false, orient:false,
+    notes_it:'Pulire e ingrassare con grasso specifico al silicone al rimontaggio.', notes_en:'Clean and grease with silicone-based caliper grease on reassembly.' },
+  B3: { group:'B', it:'Perno di scorrimento inferiore', en:'Lower slide pin',
+    func_it:'Come il perno superiore: guida di scorrimento per il corpo pinza flottante.',
+    func_en:'Same function as the upper pin: sliding guide for the floating caliper body.',
+    tool_it:'Chiave esagonale (verificare misura)', tool_en:'Hex key (check size)',
+    torque:null, single:false, orient:false,
+    notes_it:'Stessa cura del perno superiore: pulizia e grasso siliconico.', notes_en:'Same care as upper pin: clean and silicone grease.' },
+  B4: { group:'B', it:'Cuffietta parapolvere perno sup.', en:'Slide pin boot (upper)',
+    func_it:'Soffietto in gomma a fisarmonica che tiene lo sporco lontano dal perno di scorrimento superiore.',
+    func_en:'Accordion-style rubber boot keeping dirt away from the upper slide pin.',
+    tool_it:'A mano', tool_en:'By hand', torque:null, single:false, orient:false,
+    notes_it:'Se lacerata, sostituire: un perno "sporco" può bloccare la pinza (frenata trascinata).',
+    notes_en:'If torn, replace it: a contaminated pin can cause a dragging brake.' },
+  B5: { group:'B', it:'Cuffietta parapolvere perno inf.', en:'Slide pin boot (lower)',
+    func_it:'Come sopra, per il perno di scorrimento inferiore.', func_en:'Same as above, for the lower slide pin.',
+    tool_it:'A mano', tool_en:'By hand', torque:null, single:false, orient:false,
+    notes_it:'Ispezionare per tagli o indurimento della gomma.', notes_en:'Inspect for cuts or hardened rubber.' },
+  B6: { group:'B', it:'Vite fissaggio pinza (×2)', en:'Caliper mounting bolt (×2)',
+    func_it:'Fissano la staffa portapinza al supporto sul forcellone.', func_en:'Secure the caliper bracket to the swingarm mount.',
+    tool_it:'Chiave a brugola 12 mm (verificare)', tool_en:'12 mm hex key (check size)',
+    torque:'~25 N·m', single:false, orient:false,
+    notes_it:'Valutare frenafiletti medio in fase di rimontaggio, se prescritto dal manuale.', notes_en:'Consider medium-strength threadlocker on reassembly, if specified by the manual.' },
+
+  // ---------------- GRUPPO C — Pastiglie e ritegno ----------------
+  C1: { group:'C', it:'Pastiglia lato pistoncino', en:'Piston-side brake pad',
+    func_it:'Supporto metallico + materiale d\'attrito, spinto dal pistoncino contro il disco.',
+    func_en:'Metal backing plate + friction material, pushed by the piston against the disc.',
+    tool_it:'A mano', tool_en:'By hand', torque:null, single:false, orient:false,
+    notes_it:'Spessore materiale nuovo ~5 mm — limite di servizio 1 mm. Sostituire sempre in coppia.',
+    notes_en:'New friction thickness ~5 mm — service limit 1 mm. Always replace as a pair.' },
+  C2: { group:'C', it:'Pastiglia lato opposto', en:'Outer brake pad',
+    func_it:'Pastiglia sul lato fisso della pinza (lato non pistoncino).', func_en:'Pad on the fixed side of the caliper (non-piston side).',
+    tool_it:'A mano', tool_en:'By hand', torque:null, single:false, orient:false,
+    notes_it:'Stesso limite di usura della pastiglia lato pistoncino.', notes_en:'Same wear limit as the piston-side pad.' },
+  C3: { group:'C', it:'Perno di ritegno pastiglie', en:'Pad retaining pin',
+    func_it:'Perno che attraversa entrambe le pastiglie e le mantiene in sede nella pinza.', func_en:'Pin that passes through both pads and holds them in place in the caliper.',
+    tool_it:'Chiave esagonale/Torx (verificare misura)', tool_en:'Hex/Torx key (check size)',
+    torque:'~17 N·m', single:false, orient:false,
+    notes_it:'Se asimmetrico, annotare il verso di inserimento prima di sfilarlo.', notes_en:'If asymmetric, note the insertion direction before removing.' },
+  C4: { group:'C', it:'Clip / spina di sicurezza', en:'Retaining clip',
+    func_it:'Blocca assialmente il perno di ritegno pastiglie, impedendo che si allenti vibrando.', func_en:'Axially locks the pad retaining pin, preventing it from loosening under vibration.',
+    tool_it:'Pinza a becchi sottili', tool_en:'Fine-nose pliers', torque:null, single:false, orient:false,
+    notes_it:'Se deformata o affaticata, sostituirla: è un elemento di sicurezza.', notes_en:'If bent or fatigued, replace it: this is a safety item.' },
+  C5: { group:'C', it:'Molla antivibrazione', en:'Pad spring / anti-rattle spring',
+    func_it:'Lamina in acciaio in fondo alla sede pastiglie: le preme leggermente per eliminare vibrazioni e rumore.',
+    func_en:'Steel leaf spring at the bottom of the pad seat: lightly preloads the pads to prevent rattle and noise.',
+    tool_it:'A mano', tool_en:'By hand', torque:null, single:false, orient:true,
+    notes_it:'⚠️ ORIENTAMENTO CRITICO: ha un verso di montaggio preciso. Fotografarla prima di rimuoverla.',
+    notes_en:'⚠️ CRITICAL ORIENTATION: has a specific fitting direction. Photograph it before removal.' },
+  C6: { group:'C', it:'Shim pastiglie', en:'Pad shims',
+    func_it:'Lamierini antirumore applicati dietro il supporto metallico delle pastiglie.', func_en:'Anti-noise shims fitted behind the pad backing plates.',
+    tool_it:'A mano', tool_en:'By hand', torque:null, single:false, orient:false,
+    notes_it:'Se presenti, rimontarli nella posizione e verso originali.', notes_en:'If fitted, reinstall in their original position and orientation.' },
+
+  // ---------------- GRUPPO D — Linea idraulica ----------------
+  D1: { group:'D', it:'Tubo freno', en:'Brake hose / line',
+    func_it:'Tubo flessibile con terminali metallici che porta il liquido in pressione dalla pompa alla pinza.',
+    func_en:'Flexible hose with metal end fittings, carrying pressurised fluid from the master cylinder to the caliper.',
+    tool_it:'Chiave 12 mm (al banjo)', tool_en:'12 mm spanner (at the banjo)', torque:null, single:false, orient:false,
+    notes_it:'Ispezionare per screpolature o rigonfiamenti; sostituire se danneggiato.', notes_en:'Inspect for cracking or bulging; replace if damaged.' },
+  D2: { group:'D', it:'Bullone banjo lato pinza', en:'Banjo bolt (caliper side)',
+    func_it:'Bullone cavo con fori radiali: collega il tubo freno alla pinza permettendo il passaggio del liquido.',
+    func_en:'Hollow bolt with radial ports: connects the brake hose to the caliper, allowing fluid to pass.',
+    tool_it:'Chiave 12 mm', tool_en:'12 mm spanner', torque:'~25 N·m', single:false, orient:false,
+    notes_it:'Serrare con le rondelle di rame sempre nuove.', notes_en:'Tighten with the copper washers always renewed.' },
+  D3: { group:'D', it:'Rondella di rame esterna', en:'Copper washer (outer)',
+    func_it:'Rondella di tenuta tra la testa del bullone banjo e l\'occhiello del tubo.', func_en:'Sealing washer between the banjo bolt head and the hose eyelet.',
+    tool_it:'A mano', tool_en:'By hand', torque:null, single:true, orient:false,
+    notes_it:'⚠️ MONOUSO: sostituire sempre ad ogni apertura del raccordo banjo.', notes_en:'⚠️ SINGLE USE: always replace whenever the banjo joint is opened.' },
+  D4: { group:'D', it:'Rondella di rame interna', en:'Copper washer (inner)',
+    func_it:'Rondella di tenuta tra l\'occhiello del tubo e il corpo pinza.', func_en:'Sealing washer between the hose eyelet and the caliper body.',
+    tool_it:'A mano', tool_en:'By hand', torque:null, single:true, orient:false,
+    notes_it:'⚠️ MONOUSO: una sopra e una sotto l\'occhiello, sempre nuove.', notes_en:'⚠️ SINGLE USE: one above and one below the eyelet, always new.' },
+  D5: { group:'D', it:'Fermacavo / passatubo', en:'Hose clamp / guide',
+    func_it:'Fissa il tubo flessibile al forcellone, evitando che sfreghi o si impigli.', func_en:'Secures the hose to the swingarm, preventing chafing or snagging.',
+    tool_it:'Chiave a brugola piccola / a mano', tool_en:'Small hex key / by hand', torque:null, single:false, orient:false,
+    notes_it:'Verificare il corretto instradamento del tubo dopo il rimontaggio.', notes_en:'Check correct hose routing after reassembly.' },
+
+  // ---------------- GRUPPO E — Disco e ABS ----------------
+  E1: { group:'E', it:'Disco freno posteriore', en:'Rear brake disc / rotor',
+    func_it:'Disco tipo "wave" (bordo ondulato) con fori di alleggerimento, solidale al mozzo ruota.',
+    func_en:'"Wave"-type disc (scalloped edge) with lightening holes, bolted to the wheel hub.',
+    tool_it:'Chiave a brugola 5 mm (per le viti)', tool_en:'5 mm hex key (for the bolts)', torque:null, single:false, orient:false,
+    notes_it:'Controllare spessore minimo e planarità prima di rimontarlo.', notes_en:'Check minimum thickness and runout before refitting.' },
+  E2: { group:'E', it:'Viti fissaggio disco (×5-6)', en:'Disc mounting bolts (×5-6)',
+    func_it:'Fissano il disco al mozzo ruota.', func_en:'Secure the disc to the wheel hub.',
+    tool_it:'Chiave a brugola 5 mm', tool_en:'5 mm hex key', torque:'~27 N·m + frenafiletti', single:false, orient:false,
+    notes_it:'Serrare in sequenza incrociata; applicare frenafiletti.', notes_en:'Tighten in a criss-cross sequence; apply threadlocker.' },
+  E3: { group:'E', it:'Ruota fonica ABS', en:'ABS tone ring / pulser ring',
+    func_it:'Anello dentellato solidale al mozzo: la sua rotazione, letta dal sensore, genera il segnale di velocità ruota per l\'ABS.',
+    func_en:'Toothed ring fixed to the hub: its rotation, read by the sensor, generates the wheel-speed signal for the ABS.',
+    tool_it:'—', tool_en:'—', torque:null, single:false, orient:false,
+    notes_it:'⚠️ Non piegare né urtare: un dente danneggiato genera un errore ABS.', notes_en:'⚠️ Do not bend or knock it: a damaged tooth triggers an ABS fault.' },
+  E4: { group:'E', it:'Sensore ABS', en:'ABS wheel speed sensor',
+    func_it:'Rileva il passaggio dei denti della ruota fonica e invia il segnale alla centralina ABS.', func_en:'Detects the tone ring teeth passing and sends the signal to the ABS control unit.',
+    tool_it:'Chiave a brugola 5 mm', tool_en:'5 mm hex key', torque:null, single:false, orient:false,
+    notes_it:'Montato sulla staffa portapinza; verificare il traferro dal manuale se disponibile.', notes_en:'Mounted on the caliper bracket; check air gap in the manual if available.' },
+  E5: { group:'E', it:'Vite fissaggio sensore ABS', en:'ABS sensor bolt',
+    func_it:'Fissa il sensore ABS alla staffa portapinza.', func_en:'Secures the ABS sensor to the caliper bracket.',
+    tool_it:'Chiave a brugola 5 mm', tool_en:'5 mm hex key', torque:null, single:false, orient:false,
+    notes_it:'Non serrare eccessivamente: sede spesso in materiale plastico/lega leggera.', notes_en:'Do not overtighten: the boss is often plastic or light alloy.' },
+
+  // ---------------- GRUPPO F — Comando (secondario) ----------------
+  F1: { group:'F', it:'Pedale freno posteriore', en:'Rear brake pedal',
+    func_it:'Leva azionata dal piede destro del pilota, trasmette la forza alla pompa tramite l\'astina.', func_en:'Lever operated by the rider\'s right foot, transmits force to the master cylinder via the pushrod.',
+    tool_it:'Chiave 12/14 mm (perno pedale)', tool_en:'12/14 mm spanner (pivot bolt)', torque:null, single:false, orient:false,
+    notes_it:'Verificare la corsa a vuoto dopo il rimontaggio.', notes_en:'Check free play after reassembly.' },
+  F2: { group:'F', it:'Molla di richiamo pedale', en:'Pedal return spring',
+    func_it:'Riporta il pedale in posizione di riposo dopo il rilascio.', func_en:'Returns the pedal to rest position after release.',
+    tool_it:'A mano / pinza', tool_en:'By hand / pliers', torque:null, single:false, orient:false,
+    notes_it:'Verificare che non sia allungata o corrosa.', notes_en:'Check it is not stretched or corroded.' },
+  F3: { group:'F', it:'Astina di spinta (pushrod)', en:'Push rod',
+    func_it:'Collega il pedale al pistoncino della pompa freno.', func_en:'Connects the pedal to the master cylinder piston.',
+    tool_it:'Chiave 10 mm (controdado)', tool_en:'10 mm spanner (lock nut)', torque:null, single:false, orient:false,
+    notes_it:'La sua lunghezza regola la corsa a vuoto del pedale.', notes_en:'Its length sets the pedal free play.' },
+  F4: { group:'F', it:'Forcella + controdado regolazione', en:'Clevis + lock nut',
+    func_it:'Permette di regolare la lunghezza dell\'astina e quindi l\'altezza/corsa del pedale.', func_en:'Allows adjusting pushrod length and thus pedal height/travel.',
+    tool_it:'Chiave 10 mm', tool_en:'10 mm spanner', torque:null, single:false, orient:false,
+    notes_it:'Bloccare sempre il controdado dopo la regolazione.', notes_en:'Always tighten the lock nut after adjustment.' },
+  F5: { group:'F', it:'Interruttore stop posteriore', en:'Rear brake light switch',
+    func_it:'Accende la luce di stop quando il pedale viene azionato.', func_en:'Activates the brake light when the pedal is operated.',
+    tool_it:'A mano (ghiera di regolazione)', tool_en:'By hand (adjuster ring)', torque:null, single:false, orient:false,
+    notes_it:'Regolare in modo che la luce si accenda con corsa minima del pedale.', notes_en:'Adjust so the light activates with minimal pedal travel.' },
+  F6: { group:'F', it:'Pompa freno posteriore', en:'Rear master cylinder',
+    func_it:'Trasforma la forza sul pedale in pressione idraulica inviata alla pinza.', func_en:'Converts pedal force into hydraulic pressure sent to the caliper.',
+    tool_it:'Chiave a brugola (staffa fissaggio)', tool_en:'Hex key (mounting bracket)', torque:null, single:false, orient:false,
+    notes_it:'Non far cadere né inclinare eccessivamente: rischio di ingresso aria.', notes_en:'Do not drop or over-tilt: risk of air ingress.' },
+  F7: { group:'F', it:'Serbatoio liquido freni', en:'Reservoir',
+    func_it:'Contiene la riserva di liquido DOT 4 per compensare l\'usura pastiglie.', func_en:'Holds the DOT 4 fluid reserve to compensate for pad wear.',
+    tool_it:'A mano', tool_en:'By hand', torque:null, single:false, orient:false,
+    notes_it:'Mantenere il livello tra MIN e MAX.', notes_en:'Keep the level between MIN and MAX.' },
+  F8: { group:'F', it:'Tappo serbatoio', en:'Reservoir cap',
+    func_it:'Chiude il serbatoio mantenendolo a tenuta.', func_en:'Closes the reservoir, keeping it sealed.',
+    tool_it:'Cacciavite a croce (viti tappo)', tool_en:'Phillips screwdriver (cap screws)', torque:null, single:false, orient:false,
+    notes_it:'Pulire lo sfiato prima di richiudere.', notes_en:'Clean the vent before closing.' },
+  F9: { group:'F', it:'Membrana in gomma', en:'Rubber diaphragm',
+    func_it:'Segue il livello del liquido isolandolo dall\'aria, per limitare l\'assorbimento di umidità.', func_en:'Follows the fluid level, isolating it from air to limit moisture absorption.',
+    tool_it:'A mano', tool_en:'By hand', torque:null, single:false, orient:false,
+    notes_it:'Riposizionare correttamente per evitare traboccamenti.', notes_en:'Reposition correctly to avoid overflow.' },
+  F10: { group:'F', it:'Piattello membrana', en:'Diaphragm plate',
+    func_it:'Piccolo piattello che mantiene in forma la membrana in gomma.', func_en:'Small plate that keeps the rubber diaphragm shaped.',
+    tool_it:'A mano', tool_en:'By hand', torque:null, single:false, orient:false,
+    notes_it:'Non deformarlo in fase di rimontaggio.', notes_en:'Do not deform it during reassembly.' },
+  F11: { group:'F', it:'Tubetto serbatoio→pompa', en:'Reservoir hose',
+    func_it:'Collega il serbatoio remoto al corpo della pompa freno.', func_en:'Connects the remote reservoir to the master cylinder body.',
+    tool_it:'A mano (fascette)', tool_en:'By hand (clamps)', torque:null, single:false, orient:false,
+    notes_it:'Verificare che non sia schiacciato o piegato ad angolo vivo.', notes_en:'Check it is not pinched or sharply kinked.' },
+};
+
+/* ================================================================================
+   PARTE 2 — SEQUENZA DI SMONTAGGIO GUIDATA (15 step)
+   Ogni step referenzia gli ID dei pezzi coinvolti, l'attrezzo, la coppia
+   (per il rimontaggio) e note/avvertenze. Il campo explode imposta
+   automaticamente lo slider "vista esplosa" quando si arriva allo step.
+   ================================================================================ */
+const STEPS = [
+  { n:1, ids:['A6'], explode:8, phase:'base',
+    title_it:'Rimuovere il cappuccio della valvola di spurgo', title_en:'Remove the bleed nipple cap',
+    remount_it:'Reinstallare il cappuccio sulla valvola di spurgo', remount_en:'Refit the cap on the bleed nipple' },
+  { n:2, ids:['A5'], explode:15, phase:'base',
+    title_it:'Aprire lo spurgo e scaricare il liquido esausto', title_en:'Open the bleed valve and drain the old fluid',
+    remount_it:'A fine intervento: spurgare l\'aria e richiudere la valvola alla coppia indicata', remount_en:'At the end: bleed the air and close the valve to the specified torque',
+    warn_it:'Il liquido DOT 4 è corrosivo per la vernice: coprire le superfici verniciate.', warn_en:'DOT 4 fluid is corrosive to paint: cover painted surfaces.' },
+  { n:3, ids:['C4'], explode:35, phase:'base',
+    title_it:'Rimuovere la clip di sicurezza', title_en:'Remove the retaining clip',
+    remount_it:'Installare una clip di sicurezza (nuova se possibile) dopo aver inserito il perno', remount_en:'Fit a retaining clip (new if possible) after inserting the pin' },
+  { n:4, ids:['C3'], explode:42, phase:'base',
+    title_it:'Sfilare il perno di ritegno pastiglie', title_en:'Withdraw the pad retaining pin',
+    remount_it:'Inserire il perno di ritegno pastiglie e serrarlo alla coppia indicata', remount_en:'Insert the pad retaining pin and tighten to the specified torque' },
+  { n:5, ids:['C1','C2','C6'], explode:50, phase:'base',
+    title_it:'Estrarre le pastiglie freno e gli shim', title_en:'Remove the brake pads and shims',
+    remount_it:'Inserire le pastiglie nuove (in coppia) e gli shim nella posizione originale',
+    remount_en:'Fit the new pads (as a pair) and shims in their original position',
+    warn_it:'⚠️ Prima di montare pastiglie nuove: il pistoncino va spinto indietro. Aprire la valvola di spurgo durante la compressione, altrimenti il liquido risale e fa traboccare il serbatoio.',
+    warn_en:'⚠️ Before fitting new pads: the piston must be pushed back. Open the bleed valve while compressing it, otherwise fluid backs up and overflows the reservoir.' },
+  { n:6, ids:['C5'], explode:58, phase:'base',
+    title_it:'Rimuovere la molla antivibrazione', title_en:'Remove the anti-rattle spring',
+    remount_it:'Rimontare la molla antivibrazione ESATTAMENTE con lo stesso verso rilevato allo smontaggio', remount_en:'Refit the anti-rattle spring in EXACTLY the same orientation noted at removal',
+    warn_it:'⚠️ ORIENTAMENTO CRITICO: fotografare la molla prima di rimuoverla.', warn_en:'⚠️ CRITICAL ORIENTATION: photograph the spring before removing it.' },
+  { n:7, ids:['B6'], explode:66, phase:'base',
+    title_it:'Svitare le viti di fissaggio della pinza', title_en:'Unscrew the caliper mounting bolts',
+    remount_it:'Avvitare le viti di fissaggio pinza alla coppia indicata', remount_en:'Tighten the caliper mounting bolts to the specified torque' },
+  { n:8, ids:['A1','A2','A3','A4','A5','A6'], explode:74, phase:'base',
+    title_it:'Sfilare la pinza dal disco', title_en:'Slide the caliper off the disc',
+    remount_it:'Infilare la pinza sul disco, verificando che le pastiglie non urtino il bordo',
+    remount_en:'Slide the caliper onto the disc, checking the pads do not catch the edge',
+    warn_it:'Non far gravare il peso della pinza sul tubo flessibile.', warn_en:'Never let the caliper hang from the brake hose.' },
+  { n:9, ids:['A1','B1'], explode:80, phase:'base',
+    title_it:'Separare il corpo pinza dalla staffa portapinza', title_en:'Separate the caliper body from the bracket',
+    remount_it:'Accoppiare il corpo pinza alla staffa, facendolo scorrere sui perni ingrassati',
+    remount_en:'Fit the caliper body onto the bracket, sliding it onto the greased pins' },
+  { n:10, ids:['B2','B3','B4','B5'], explode:86, phase:'base',
+    title_it:'Estrarre i perni di scorrimento e le cuffiette parapolvere', title_en:'Withdraw the slide pins and dust boots',
+    remount_it:'Pulire, ingrassare (grasso siliconico) e reinserire i perni con le cuffiette nuove/integre',
+    remount_en:'Clean, grease (silicone grease) and refit the pins with new/undamaged boots',
+    warn_it:'Cuffiette lacerate possono causare grippaggio dei perni e frenata trascinata.', warn_en:'Torn boots can cause pins to seize and the brake to drag.' },
+  { n:11, ids:['D2','D3','D4'], explode:92, phase:'revisione',
+    title_it:'[Solo revisione] Svitare il bullone banjo e recuperare le rondelle di rame', title_en:'[Overhaul only] Unscrew the banjo bolt and retrieve the copper washers',
+    remount_it:'Montare il banjo con rondelle di rame NUOVE (una sopra, una sotto l\'occhiello) e serrare alla coppia indicata',
+    remount_en:'Fit the banjo with NEW copper washers (one above, one below the eyelet) and tighten to the specified torque',
+    warn_it:'⚠️ Le rondelle di rame sono monouso: sostituirle sempre.', warn_en:'⚠️ Copper washers are single-use: always replace them.' },
+  { n:12, ids:['A2'], explode:96, phase:'revisione',
+    title_it:'[Solo revisione] Estrarre il pistoncino', title_en:'[Overhaul only] Remove the piston',
+    remount_it:'Lubrificare con liquido freni e inserire il pistoncino nuovo/revisionato nel cilindro',
+    remount_en:'Lubricate with brake fluid and insert the new/refurbished piston into the bore',
+    warn_it:'Con il banjo aperto il liquido può fuoriuscire: operare sopra un contenitore.', warn_en:'With the banjo open, fluid can leak out: work over a container.' },
+  { n:13, ids:['A3','A4'], explode:100, phase:'revisione',
+    title_it:'[Solo revisione] Rimuovere parapolvere e anello di tenuta', title_en:'[Overhaul only] Remove the dust seal and piston seal',
+    remount_it:'Montare guarnizioni nuove (kit di revisione) nelle rispettive gole',
+    remount_en:'Fit new seals (overhaul kit) into their respective grooves' },
+  { n:14, ids:['E1','E3'], explode:40, phase:'disco', cameraOverride:'disc',
+    title_it:'[Solo intervento sul disco] Rimuovere la ruota posteriore', title_en:'[Disc work only] Remove the rear wheel',
+    remount_it:'Rimontare la ruota posteriore e serrare il dado asse alla coppia indicata',
+    remount_en:'Refit the rear wheel and tighten the axle nut to the specified torque',
+    tool_it:'Chiave dado ruota + cavalletto posteriore', tool_en:'Axle nut wrench + rear paddock stand',
+    torque:'Dado ruota post. ~108 N·m',
+    warn_it:'Allentare il dado ruota con la moto a terra, prima di sollevarla.', warn_en:'Loosen the axle nut with the bike on the ground, before lifting it.' },
+  { n:15, ids:['E1','E2'], explode:55, phase:'disco', cameraOverride:'disc',
+    title_it:'[Solo intervento sul disco] Svitare le viti e rimuovere il disco freno', title_en:'[Disc work only] Unscrew the bolts and remove the brake disc',
+    remount_it:'Montare il disco con viti nuove/pulite, frenafiletti, e serrare in sequenza incrociata alla coppia indicata',
+    remount_en:'Fit the disc with clean/new bolts, threadlocker, tightening in a criss-cross pattern to the specified torque',
+    warn_it:'⚠️ Non piegare né urtare la ruota fonica ABS (E3): un dente danneggiato genera un errore ABS.',
+    warn_en:'⚠️ Do not bend or knock the ABS tone ring (E3): a damaged tooth triggers an ABS fault.' },
+];
+
+/* ================================================================================
+   PARTE 3 — SCENA THREE.JS: costanti geometriche e layout dell'assieme
+   ================================================================================ */
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x12161b);
+
+const canvas = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:false });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, 2));
+
+const camera = new THREE.PerspectiveCamera(42, 1, 0.05, 100);
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+controls.minDistance = 1.2;
+controls.maxDistance = 14;
+
+// vista di default: inquadra l'intero cluster disco+pinza (gruppo F resta raggiungibile con lo zoom out)
+const DEFAULT_TARGET = new THREE.Vector3(0.25, -0.35, 0);
+const DEFAULT_CAM_POS = new THREE.Vector3(3.1, 2.0, 4.0);
+controls.target.copy(DEFAULT_TARGET);
+
+// --- Luci: DirectionalLight + AmbientLight + HemisphereLight per leggibilità ---
+scene.add(new THREE.HemisphereLight(0x9fb4d1, 0x1a1712, 0.65));
+scene.add(new THREE.AmbientLight(0xffffff, 0.35));
+const dirLight = new THREE.DirectionalLight(0xffffff, 1.05);
+dirLight.position.set(3.5, 4.5, 4);
+scene.add(dirLight);
+const dirLight2 = new THREE.DirectionalLight(0x88aaff, 0.35);
+dirLight2.position.set(-3, -2, -3);
+scene.add(dirLight2);
+
+// --- Layout: geometria costruita attorno al disco (centro = origine) ---
+const R = 1.15;              // raggio disco
+const DISC_THICK = 0.07;     // spessore disco
+const HUB_R = 0.30;          // raggio zona mozzo
+
+const callAngle = THREE.MathUtils.degToRad(-55);   // posizione angolare della pinza rispetto al centro disco
+const callCenter = new THREE.Vector3(R*0.93*Math.cos(callAngle), R*0.93*Math.sin(callAngle), 0);
+const rHat = callCenter.clone().normalize();
+const tHat = new THREE.Vector3(-rHat.y, rHat.x, 0);
+
+// offset locale (radiale, tangenziale, assiale) -> coordinate mondo, per i pezzi attorno alla pinza
+function callPt(ru, tv, z){
+  return new THREE.Vector3()
+    .addScaledVector(rHat, ru)
+    .addScaledVector(tHat, tv)
+    .addScaledVector(new THREE.Vector3(0,0,1), z)
+    .add(callCenter);
+}
+// coordinate per i pezzi centrati sul disco
+function discPt(x,y,z){ return new THREE.Vector3(x,y,z); }
+
+// il gruppo "comando" (pedale/pompa) vive in una zona propria della scena
+const pedalOrigin = new THREE.Vector3(-3.5, -1.55, 0.25);
+function fPt(x,y,z){ return new THREE.Vector3(x,y,z).add(pedalOrigin); }
+
+/* ================================================================================
+   PARTE 4 — HELPER GEOMETRICI
+   ================================================================================ */
+function mat(color, opts){
+  opts = opts || {};
+  return new THREE.MeshStandardMaterial({
+    color: color,
+    metalness: opts.metalness !== undefined ? opts.metalness : 0.55,
+    roughness: opts.roughness !== undefined ? opts.roughness : 0.5,
+    transparent: true,
+    opacity: 1,
+  });
+}
+function shade(hex, f){
+  const c = new THREE.Color(hex);
+  if(f >= 0) c.lerp(new THREE.Color(0xffffff), f); else c.lerp(new THREE.Color(0x000000), -f);
+  return c.getHex();
+}
+
+// registro dei pezzi costruiti: id -> { def, group3d(Object3D esploso), meshes[], anchor(Vector3), tStart }
+const partsById = {};
+
+function newPartGroup(id){
+  const g = new THREE.Group();
+  g.userData.partId = id;
+  scene.add(g);
+  return g;
+}
+function addMesh(partGroup, geo, material, pos, rot){
+  const m = new THREE.Mesh(geo, material);
+  if(pos) m.position.copy(pos);
+  if(rot) m.rotation.set(rot.x||0, rot.y||0, rot.z||0);
+  m.userData.partId = partGroup.userData.partId;
+  m.castShadow = false; m.receiveShadow = false;
+  partGroup.add(m);
+  return m;
+}
+
+// bullone esagonale generico (testa esagono + gambo cilindrico), asse di default = Y (verticale)
+function hexBolt(shaftLen, shaftR, headR, headLen, color){
+  const grp = new THREE.Group();
+  const shaftGeo = new THREE.CylinderGeometry(shaftR, shaftR, shaftLen, 10);
+  const headGeo = new THREE.CylinderGeometry(headR, headR, headLen, 6);
+  const m1 = mat(color, {metalness:0.75, roughness:0.35});
+  const s = new THREE.Mesh(shaftGeo, m1); s.position.y = -shaftLen/2;
+  const h = new THREE.Mesh(headGeo, m1.clone()); h.position.y = headLen/2;
+  grp.add(s, h);
+  return grp;
+}
+
+// rondella (anello) approssimata con un toro
+function washerRing(outerR, innerR, color, metalness, roughness){
+  const rr = (outerR+innerR)/2, tube = Math.max((outerR-innerR)/2, 0.006);
+  const geo = new THREE.TorusGeometry(rr, tube, 10, 24);
+  return new THREE.Mesh(geo, mat(color, {metalness: metalness!==undefined?metalness:0.9, roughness: roughness!==undefined?roughness:0.25}));
+}
+
+// cuffietta a soffietto (lathe): asse nativo Y, poi ruotata per allinearsi all'asse voluto
+function bellowsBoot(length, rMin, rMax, rings, color){
+  const pts = [];
+  pts.push(new THREE.Vector2(rMin*0.7, 0));
+  for(let i=0;i<=rings;i++){
+    const y = (i/rings)*length;
+    const r = (i%2===0) ? rMax : rMin;
+    pts.push(new THREE.Vector2(r, y));
+  }
+  pts.push(new THREE.Vector2(rMin*0.7, length));
+  const geo = new THREE.LatheGeometry(pts, 16);
+  return new THREE.Mesh(geo, mat(color, {metalness:0.05, roughness:0.9}));
+}
+
+// disco "wave" con fori: Shape con bordo ondulato + foro centrale + fori di alleggerimento, estruso
+function waveDiscGeometry(rOuterBase, waveAmp, waveN, rInner, thickness, lightenHoles){
+  const shape = new THREE.Shape();
+  const seg = 160;
+  for(let i=0;i<=seg;i++){
+    const th = (i/seg)*Math.PI*2;
+    const r = rOuterBase + waveAmp*Math.sin(th*waveN);
+    const x = r*Math.cos(th), y = r*Math.sin(th);
+    if(i===0) shape.moveTo(x,y); else shape.lineTo(x,y);
+  }
+  const hole = new THREE.Path();
+  for(let i=0;i<=48;i++){
+    const th = (i/48)*Math.PI*2;
+    const x = rInner*Math.cos(th), y = rInner*Math.sin(th);
+    if(i===0) hole.moveTo(x,y); else hole.lineTo(x,y);
+  }
+  shape.holes.push(hole);
+  if(lightenHoles){
+    const holeR = rOuterBase*0.09;
+    const ringR = (rInner + rOuterBase*0.62)/1.35;
+    for(let i=0;i<10;i++){
+      const th = (i/10)*Math.PI*2 + 0.3;
+      const cx = ringR*Math.cos(th), cy = ringR*Math.sin(th);
+      const p = new THREE.Path();
+      for(let j=0;j<=16;j++){
+        const a = (j/16)*Math.PI*2;
+        const x = cx + holeR*Math.cos(a), y = cy + holeR*Math.sin(a);
+        if(j===0) p.moveTo(x,y); else p.lineTo(x,y);
+      }
+      shape.holes.push(p);
+    }
+  }
+  const geo = new THREE.ExtrudeGeometry(shape, { depth: thickness, bevelEnabled:false, curveSegments: 64 });
+  geo.translate(0,0,-thickness/2);
+  return geo;
+}
+
+// ruota fonica ABS: anello dentato (estruso, sottile)
+function toneRingGeometry(rBase, toothDepth, nTeeth, rInner, thickness){
+  const shape = new THREE.Shape();
+  const seg = nTeeth*2;
+  for(let i=0;i<=seg;i++){
+    const th = (i/seg)*Math.PI*2;
+    const r = rBase + ((i%2===0) ? toothDepth : 0);
+    const x = r*Math.cos(th), y = r*Math.sin(th);
+    if(i===0) shape.moveTo(x,y); else shape.lineTo(x,y);
+  }
+  const hole = new THREE.Path();
+  for(let i=0;i<=40;i++){
+    const th = (i/40)*Math.PI*2;
+    const x = rInner*Math.cos(th), y = rInner*Math.sin(th);
+    if(i===0) hole.moveTo(x,y); else hole.lineTo(x,y);
+  }
+  shape.holes.push(hole);
+  const geo = new THREE.ExtrudeGeometry(shape, { depth: thickness, bevelEnabled:false, curveSegments: 48 });
+  geo.translate(0,0,-thickness/2);
+  return geo;
+}
+
+// tubo flessibile lungo una curva (hose/cavo)
+function hoseTube(points, radius, color, segs){
+  const curve = new THREE.CatmullRomCurve3(points);
+  const geo = new THREE.TubeGeometry(curve, segs||24, radius, 8, false);
+  return new THREE.Mesh(geo, mat(color, {metalness:0.2, roughness:0.75}));
+}
+
+// molla elicoidale (coil spring) lungo asse Y
+function coilSpring(turns, radius, height, tubeR, color){
+  const N = 80;
+  const pts = [];
+  for(let i=0;i<=N;i++){
+    const t = i/N;
+    pts.push(new THREE.Vector3(radius*Math.cos(t*turns*Math.PI*2), t*height, radius*Math.sin(t*turns*Math.PI*2)));
+  }
+  const curve = new THREE.CatmullRomCurve3(pts);
+  const geo = new THREE.TubeGeometry(curve, 160, tubeR, 6, false);
+  return new THREE.Mesh(geo, mat(color, {metalness:0.7, roughness:0.4}));
+}
+
+/* ================================================================================
+   PARTE 5 — COSTRUZIONE DEI PEZZI (GRUPPI A-F)
+   Ogni funzione crea le mesh nella loro posizione ASSEMBLATA (coordinate mondo);
+   la separazione esplosa avviene poi spostando l'intero Object3D del pezzo
+   (position = offset di esplosione), lasciando le mesh interne invariate.
+   ================================================================================ */
+
+// ---------- GRUPPO A: corpo pinza ----------
+(function buildGroupA(){
+  const colA = GROUPS.A.color;
+
+  // A1 — corpo pinza: blocco inboard (piston side) + blocco outboard + ponte
+  const gA1 = newPartGroup('A1');
+  const innerBlockGeo = new THREE.BoxGeometry(0.62, 0.5, 0.40);
+  addMesh(gA1, innerBlockGeo, mat(colA), callPt(-0.06,0,-0.42));
+  const outerBlockGeo = new THREE.BoxGeometry(0.5, 0.42, 0.24);
+  addMesh(gA1, outerBlockGeo, mat(shade(colA,-0.05)), callPt(-0.02,0, 0.34));
+  const bridgeGeo = new THREE.BoxGeometry(0.30, 0.56, 0.82);
+  addMesh(gA1, bridgeGeo, mat(shade(colA,0.05)), callPt(0.30,0,0.04));
+  // piccolo logo stilizzato (blocchetto) sul fianco esterno
+  addMesh(gA1, new THREE.BoxGeometry(0.22,0.10,0.02), mat(0x0e0e0e,{metalness:0.2,roughness:0.6}), callPt(-0.06,0.28,-0.20));
+
+  // A2 — pistoncino (cilindro cavo lungo Z, dentro il blocco inboard)
+  const gA2 = newPartGroup('A2');
+  const pistonGeo = new THREE.CylinderGeometry(0.15,0.15,0.30,24,1,true);
+  addMesh(gA2, pistonGeo, mat(0xd7dbe0,{metalness:0.85, roughness:0.2}), callPt(-0.06,0,-0.30), {x:Math.PI/2});
+  const pistonCapGeo = new THREE.CircleGeometry(0.15,24);
+  addMesh(gA2, pistonCapGeo, mat(0xd7dbe0,{metalness:0.85, roughness:0.2}), callPt(-0.06,0,-0.15));
+
+  // A3 — anello di tenuta pistoncino (gola interna)
+  const gA3 = newPartGroup('A3');
+  addMesh(gA3, new THREE.TorusGeometry(0.155,0.02,8,20), mat(0x1c1c1c,{metalness:0.05,roughness:0.85}), callPt(-0.06,0,-0.34), {x:Math.PI/2});
+
+  // A4 — parapolvere pistoncino (più esterno)
+  const gA4 = newPartGroup('A4');
+  addMesh(gA4, new THREE.TorusGeometry(0.165,0.025,8,20), mat(0x161616,{metalness:0.05,roughness:0.9}), callPt(-0.06,0,-0.17), {x:Math.PI/2});
+
+  // A5 — valvola di spurgo (nipplo conico sulla parte alta)
+  const gA5 = newPartGroup('A5');
+  addMesh(gA5, new THREE.CylinderGeometry(0.045,0.06,0.22,10), mat(0xb8bdc4,{metalness:0.8,roughness:0.3}), callPt(0.14,0.30,-0.30), {x:Math.PI*0.62});
+
+  // A6 — cappuccio valvola spurgo
+  const gA6 = newPartGroup('A6');
+  addMesh(gA6, new THREE.SphereGeometry(0.05,12,10), mat(0x1a1a1a,{metalness:0.05,roughness:0.9}), callPt(0.24,0.34,-0.30));
+})();
+
+// ---------- GRUPPO B: staffa e scorrimento ----------
+(function buildGroupB(){
+  const colB = GROUPS.B.color;
+
+  // B1 — staffa portapinza (piastra radialmente interna, con due bracci)
+  const gB1 = newPartGroup('B1');
+  addMesh(gB1, new THREE.BoxGeometry(0.30,0.62,0.9), mat(colB), callPt(-0.55,0,0));
+  addMesh(gB1, new THREE.BoxGeometry(0.30,0.22,0.22), mat(shade(colB,0.05)), callPt(-0.30,0.28,-0.40));
+  addMesh(gB1, new THREE.BoxGeometry(0.30,0.22,0.22), mat(shade(colB,0.05)), callPt(-0.30,-0.28,-0.40));
+
+  // B2/B3 — perni di scorrimento (asse Z, superiore/inferiore)
+  const gB2 = newPartGroup('B2');
+  addMesh(gB2, new THREE.CylinderGeometry(0.045,0.045,0.62,12), mat(0xcfd4da,{metalness:0.85,roughness:0.25}), callPt(-0.30,0.28,-0.28), {x:Math.PI/2});
+  const gB3 = newPartGroup('B3');
+  addMesh(gB3, new THREE.CylinderGeometry(0.045,0.045,0.62,12), mat(0xcfd4da,{metalness:0.85,roughness:0.25}), callPt(-0.30,-0.28,-0.28), {x:Math.PI/2});
+
+  // B4/B5 — cuffiette a soffietto sui perni
+  const gB4 = newPartGroup('B4');
+  const b4 = bellowsBoot(0.30, 0.05, 0.09, 5, 0x141414);
+  b4.rotation.x = Math.PI/2;
+  b4.position.copy(callPt(-0.30,0.28,-0.12));
+  b4.userData.partId='B4'; gB4.add(b4);
+  const gB5 = newPartGroup('B5');
+  const b5 = bellowsBoot(0.30, 0.05, 0.09, 5, 0x141414);
+  b5.rotation.x = Math.PI/2;
+  b5.position.copy(callPt(-0.30,-0.28,-0.12));
+  b5.userData.partId='B5'; gB5.add(b5);
+
+  // B6 — viti fissaggio pinza (×2), radiali verso lo pseudo-forcellone
+  const gB6 = newPartGroup('B6');
+  [0.24,-0.24].forEach(tv=>{
+    const bolt = hexBolt(0.34, 0.045, 0.075, 0.06, 0xcfd4da);
+    bolt.rotation.z = Math.PI/2;
+    bolt.position.copy(callPt(-0.78, tv, 0));
+    bolt.traverse(o=>{ if(o.isMesh) o.userData.partId='B6'; });
+    gB6.add(bolt);
+  });
+})();
+
+// riferimento visivo non interattivo: stub forcellone + perno ruota (solo contesto)
+let refGroup;
+(function buildReference(){
+  refGroup = new THREE.Group();
+  const m = mat(0x394452, {metalness:0.4, roughness:0.7});
+  m.opacity = 0.4;
+  const swingarm = new THREE.Mesh(new THREE.BoxGeometry(0.34,0.34,2.0), m);
+  swingarm.position.copy(callPt(-1.05,0,0));
+  const axle = new THREE.Mesh(new THREE.CylinderGeometry(0.10,0.10,1.4,16), m.clone());
+  axle.material.opacity = 0.35;
+  axle.rotation.x = Math.PI/2;
+  axle.position.set(0,0,0);
+  refGroup.add(swingarm, axle);
+  scene.add(refGroup);
+})();
+
+// ---------- GRUPPO C: pastiglie e ritegno ----------
+(function buildGroupC(){
+  const colC = GROUPS.C.color;
+
+  // C1 — pastiglia lato pistoncino (backing + materiale attrito)
+  const gC1 = newPartGroup('C1');
+  addMesh(gC1, new THREE.BoxGeometry(0.46,0.5,0.045), mat(0xcfd2d6,{metalness:0.6,roughness:0.4}), callPt(-0.10,0,-0.11));
+  addMesh(gC1, new THREE.BoxGeometry(0.44,0.46,0.05), mat(0x232323,{metalness:0.05,roughness:0.95}), callPt(-0.10,0,-0.065));
+
+  // C2 — pastiglia lato opposto
+  const gC2 = newPartGroup('C2');
+  addMesh(gC2, new THREE.BoxGeometry(0.46,0.5,0.045), mat(0xcfd2d6,{metalness:0.6,roughness:0.4}), callPt(-0.02,0,0.11));
+  addMesh(gC2, new THREE.BoxGeometry(0.44,0.46,0.05), mat(0x232323,{metalness:0.05,roughness:0.95}), callPt(-0.02,0,0.065));
+
+  // C6 — shim antirumore (lamierino sottile dietro ciascun backing)
+  const gC6 = newPartGroup('C6');
+  addMesh(gC6, new THREE.BoxGeometry(0.40,0.44,0.01), mat(0x8a8f96,{metalness:0.8,roughness:0.3}), callPt(-0.10,0,-0.135));
+  addMesh(gC6, new THREE.BoxGeometry(0.40,0.44,0.01), mat(0x8a8f96,{metalness:0.8,roughness:0.3}), callPt(-0.02,0,0.135));
+
+  // C3 — perno di ritegno pastiglie (orizzontale, attraversa entrambe le pastiglie)
+  const gC3 = newPartGroup('C3');
+  const pinC3 = addMesh(gC3, new THREE.CylinderGeometry(0.035,0.035,0.62,12), mat(0xcfd4da,{metalness:0.85,roughness:0.25}), callPt(-0.06,0,0), {z:Math.PI/2});
+
+  // C4 — clip di sicurezza (piccola, ad un'estremità del perno)
+  const gC4 = newPartGroup('C4');
+  addMesh(gC4, new THREE.TorusGeometry(0.045,0.008,6,14,Math.PI*1.4), mat(0xb0b4ba,{metalness:0.8,roughness:0.3}), callPt(-0.06,0.33,0), {y:Math.PI/2});
+
+  // C5 — molla antivibrazione: profilo a "W" sul fondo della sede, orientamento critico
+  const gC5 = newPartGroup('C5');
+  const springColor = 0x9aa0a6;
+  const segGeo = new THREE.BoxGeometry(0.30,0.10,0.02);
+  const zig = [
+    {x:-0.18, y:0.05, rz: 0.5},
+    {x:-0.06, y:-0.05, rz:-0.5},
+    {x: 0.06, y:0.05, rz: 0.5},
+    {x: 0.18, y:-0.05, rz:-0.5},
+  ];
+  zig.forEach(s=>{
+    const p = callPt(-0.24 + s.x*0.3, s.y*0.6, 0);
+    addMesh(gC5, segGeo, mat(springColor,{metalness:0.75,roughness:0.35}), p, {z:s.rz});
+  });
+})();
+
+// ---------- GRUPPO D: linea idraulica ----------
+(function buildGroupD(){
+  // D2 — bullone banjo (testa forata + gambo cavo), sulla parte alta della pinza
+  const bjPos = callPt(0.06, 0.30, -0.30);
+  const gD2 = newPartGroup('D2');
+  addMesh(gD2, new THREE.CylinderGeometry(0.09,0.09,0.10,16), mat(0xc7cdd3,{metalness:0.85,roughness:0.25}), bjPos.clone().add(new THREE.Vector3(0,0.06,0)));
+  addMesh(gD2, new THREE.CylinderGeometry(0.045,0.045,0.28,12), mat(0xc7cdd3,{metalness:0.85,roughness:0.25}), bjPos.clone().add(new THREE.Vector3(0,-0.05,0)));
+
+  // D3/D4 — rondelle di rame (sopra/sotto l'occhiello del tubo)
+  const gD3 = newPartGroup('D3');
+  addMesh(gD3, new THREE.TorusGeometry(0.075,0.014,8,20), mat(0xc77b3e,{metalness:0.9,roughness:0.25}), bjPos.clone().add(new THREE.Vector3(0,0.115,0)), {x:Math.PI/2});
+  const gD4 = newPartGroup('D4');
+  addMesh(gD4, new THREE.TorusGeometry(0.075,0.014,8,20), mat(0xc77b3e,{metalness:0.9,roughness:0.25}), bjPos.clone().add(new THREE.Vector3(0,0.005,0)), {x:Math.PI/2});
+
+  // D1 — tubo freno flessibile: dall'occhiello banjo verso l'alto, con raccordo terminale
+  const gD1 = newPartGroup('D1');
+  const hosePts = [
+    bjPos.clone().add(new THREE.Vector3(0,0.14,0)),
+    bjPos.clone().add(new THREE.Vector3(0.15,0.55,0.05)),
+    bjPos.clone().add(new THREE.Vector3(0.05,1.05,0.15)),
+    bjPos.clone().add(new THREE.Vector3(-0.15,1.5,0.25)),
+  ];
+  const hose = hoseTube(hosePts, 0.028, 0x151515, 30);
+  hose.userData.partId='D1'; gD1.add(hose);
+  const fitting = new THREE.Mesh(new THREE.CylinderGeometry(0.045,0.045,0.10,10), mat(0x9aa0a6,{metalness:0.85,roughness:0.3}));
+  fitting.position.copy(hosePts[3]); fitting.userData.partId='D1'; gD1.add(fitting);
+
+  // D5 — fermacavo/passatubo, sullo stub forcellone
+  const gD5 = newPartGroup('D5');
+  addMesh(gD5, new THREE.TorusGeometry(0.09,0.02,8,16,Math.PI*1.2), mat(0x2b2f33,{metalness:0.4,roughness:0.7}), callPt(-1.02,0,0.55), {y:Math.PI/2});
+})();
+
+// ---------- GRUPPO E: disco e ABS ----------
+(function buildGroupE(){
+  // E1 — disco freno "wave" con fori di alleggerimento
+  const gE1 = newPartGroup('E1');
+  const discGeo = waveDiscGeometry(R, R*0.045, 9, HUB_R, DISC_THICK, true);
+  addMesh(gE1, discGeo, mat(0x8a8a8a,{metalness:0.75,roughness:0.55}), discPt(0,0,0));
+
+  // E2 — viti fissaggio disco (×6, cerchio bulloni sul mozzo)
+  const gE2 = newPartGroup('E2');
+  for(let i=0;i<6;i++){
+    const th = (i/6)*Math.PI*2;
+    const rC = HUB_R*0.72;
+    const bolt = hexBolt(0.10, 0.03, 0.05, 0.03, 0xb9c0c9);
+    bolt.rotation.x = Math.PI/2;
+    bolt.position.set(rC*Math.cos(th), rC*Math.sin(th), DISC_THICK/2);
+    bolt.traverse(o=>{ if(o.isMesh) o.userData.partId='E2'; });
+    gE2.add(bolt);
+  }
+
+  // E3 — ruota fonica ABS (anello dentato, inboard rispetto al disco)
+  const gE3 = newPartGroup('E3');
+  const toneGeo = toneRingGeometry(HUB_R*1.35, HUB_R*0.16, 44, HUB_R*0.95, 0.025);
+  addMesh(gE3, toneGeo, mat(0x5b5b5b,{metalness:0.6,roughness:0.5}), discPt(0,0,-DISC_THICK/2-0.03));
+
+  // E4 — sensore ABS (corpo + cavo), affacciato alla ruota fonica
+  const gE4 = newPartGroup('E4');
+  const sensorPos = discPt(HUB_R*1.55*Math.cos(callAngle*0.4), HUB_R*1.55*Math.sin(callAngle*0.4), -DISC_THICK/2-0.10);
+  addMesh(gE4, new THREE.CylinderGeometry(0.055,0.055,0.16,14), mat(0x1c1c1c,{metalness:0.3,roughness:0.6}), sensorPos, {x:Math.PI/2});
+  const cablePts = [ sensorPos.clone(), sensorPos.clone().add(new THREE.Vector3(-0.3,-0.2,0.1)), sensorPos.clone().add(new THREE.Vector3(-0.7,-0.1,0.3)) ];
+  const cable = hoseTube(cablePts, 0.014, 0x0c0c0c, 16);
+  cable.userData.partId='E4'; gE4.add(cable);
+
+  // E5 — vite fissaggio sensore ABS
+  const gE5 = newPartGroup('E5');
+  const boltE5 = hexBolt(0.08,0.02,0.035,0.025,0xb9c0c9);
+  boltE5.rotation.x = Math.PI/2;
+  boltE5.position.copy(sensorPos.clone().add(new THREE.Vector3(0,0.09,0)));
+  boltE5.traverse(o=>{ if(o.isMesh) o.userData.partId='E5'; });
+  gE5.add(boltE5);
+})();
+
+// ---------- GRUPPO F: comando (pedale/pompa) — gruppo secondario ----------
+(function buildGroupF(){
+  const colF = GROUPS.F.color;
+
+  // F1 — pedale (leva a L)
+  const gF1 = newPartGroup('F1');
+  addMesh(gF1, new THREE.BoxGeometry(0.09,0.55,0.10), mat(colF), fPt(0,0.25,0));
+  addMesh(gF1, new THREE.BoxGeometry(0.34,0.09,0.16), mat(shade(colF,0.1)), fPt(-0.18,0.02,0));
+
+  // F2 — molla di richiamo (coil)
+  const gF2 = newPartGroup('F2');
+  const spring = coilSpring(6, 0.045, 0.22, 0.009, 0x8a8f96);
+  spring.rotation.z = Math.PI/2.3;
+  spring.position.copy(fPt(0.18,0.28,0));
+  spring.userData.partId='F2'; gF2.add(spring);
+
+  // F3 — astina di spinta (pushrod)
+  const gF3 = newPartGroup('F3');
+  addMesh(gF3, new THREE.CylinderGeometry(0.02,0.02,0.42,10), mat(0xc7cdd3,{metalness:0.8,roughness:0.3}), fPt(0.32,0.35,0), {z:1.2});
+
+  // F4 — forcella + controdado
+  const gF4 = newPartGroup('F4');
+  addMesh(gF4, new THREE.BoxGeometry(0.10,0.10,0.05), mat(0xaeb4bb,{metalness:0.75,roughness:0.35}), fPt(0.55,0.55,0));
+  addMesh(gF4, new THREE.CylinderGeometry(0.035,0.035,0.03,6), mat(0xaeb4bb,{metalness:0.75,roughness:0.35}), fPt(0.55,0.48,0));
+
+  // F5 — interruttore stop
+  const gF5 = newPartGroup('F5');
+  addMesh(gF5, new THREE.CylinderGeometry(0.035,0.035,0.12,10), mat(0x222222,{metalness:0.3,roughness:0.6}), fPt(0.05,0.60,0.10), {x:Math.PI/2});
+
+  // F6 — pompa freno (corpo cilindrico)
+  const gF6 = newPartGroup('F6');
+  addMesh(gF6, new THREE.CylinderGeometry(0.08,0.08,0.34,16), mat(0xb9c0c9,{metalness:0.7,roughness:0.35}), fPt(0.62,0.62,0), {z:Math.PI/2});
+
+  // F7 — serbatoio remoto
+  const gF7 = newPartGroup('F7');
+  addMesh(gF7, new THREE.CylinderGeometry(0.09,0.09,0.20,16), mat(0xe7e7e0,{metalness:0.1,roughness:0.4,transparent:true}), fPt(0.55,0.98,0.05));
+
+  // F8 — tappo serbatoio
+  const gF8 = newPartGroup('F8');
+  addMesh(gF8, new THREE.CylinderGeometry(0.10,0.10,0.03,16), mat(0x2b2f33,{metalness:0.4,roughness:0.6}), fPt(0.55,1.10,0.05));
+
+  // F9 — membrana in gomma
+  const gF9 = newPartGroup('F9');
+  addMesh(gF9, new THREE.CylinderGeometry(0.075,0.075,0.01,16), mat(0x141414,{metalness:0.05,roughness:0.9}), fPt(0.55,1.055,0.05));
+
+  // F10 — piattello membrana
+  const gF10 = newPartGroup('F10');
+  addMesh(gF10, new THREE.CylinderGeometry(0.065,0.065,0.006,16), mat(0x9aa0a6,{metalness:0.7,roughness:0.4}), fPt(0.55,1.04,0.05));
+
+  // F11 — tubetto serbatoio -> pompa
+  const gF11 = newPartGroup('F11');
+  const hpts = [ fPt(0.55,0.90,0.05), fPt(0.58,0.78,0.03), fPt(0.62,0.70,0) ];
+  const h11 = hoseTube(hpts, 0.016, 0x151515, 16);
+  h11.userData.partId='F11'; gF11.add(h11);
+})();
+
+/* ================================================================================
+   PARTE 6 — REGISTRAZIONE PEZZI: calcolo ancora (anchor) per etichette/camera
+   e direzioni/distanze di esplosione, indicizzate per ID.
+   ================================================================================ */
+Object.keys(PART_DEFS).forEach(id=>{
+  const obj = scene.getObjectByProperty('userData', undefined); // no-op guard
+});
+
+function registerPart(id, dir, dist, tStart){
+  const grp = scene.children.find(o=>o.userData && o.userData.partId===id);
+  if(!grp){ console.warn('Gruppo mancante per', id); return; }
+  const box = new THREE.Box3().setFromObject(grp);
+  const anchor = box.getCenter(new THREE.Vector3());
+  const size = box.getSize(new THREE.Vector3());
+  partsById[id] = {
+    def: PART_DEFS[id],
+    obj: grp,
+    anchor: anchor,
+    size: size,
+    dir: dir.clone().normalize(),
+    dist: dist,
+    tStart: tStart!==undefined?tStart:0,
+    current: 0, // esplosione corrente 0..1 (per damping)
+  };
+}
+
+// direzioni: rHat/tHat/Z per l'area pinza; radiali/assiali per l'area disco; libere per l'area pedale
+const Z = new THREE.Vector3(0,0,1);
+const stepOrderIndex = {}; // usato per scaglionare l'esplosione secondo l'ordine di smontaggio
+STEPS.forEach((s,i)=> s.ids.forEach(id=>{ if(!(id in stepOrderIndex)) stepOrderIndex[id]=i; }));
+function tStartFor(id){
+  const i = stepOrderIndex[id];
+  if(i===undefined) return 0.15;
+  return Math.min(0.55, (i/STEPS.length)*0.55);
+}
+
+registerPart('A6', rHat, 0.5, tStartFor('A6'));
+registerPart('A5', rHat, 0.28, tStartFor('A5'));
+registerPart('A1', rHat, 1.35, tStartFor('A1'));
+registerPart('A2', Z.clone().multiplyScalar(-1), 0.55, tStartFor('A2'));
+registerPart('A3', Z.clone().multiplyScalar(-1), 0.75, tStartFor('A3'));
+registerPart('A4', Z.clone().multiplyScalar(-1), 0.65, tStartFor('A4'));
+
+registerPart('B1', rHat.clone().multiplyScalar(-1), 1.1, tStartFor('B1'));
+registerPart('B2', Z, 0.85, tStartFor('B2'));
+registerPart('B3', Z.clone().multiplyScalar(-1), 0.85, tStartFor('B3'));
+registerPart('B4', Z, 0.6, tStartFor('B4'));
+registerPart('B5', Z.clone().multiplyScalar(-1), 0.6, tStartFor('B5'));
+registerPart('B6', rHat.clone().multiplyScalar(-1), 0.9, tStartFor('B6'));
+
+registerPart('C1', Z.clone().multiplyScalar(-1), 0.55, tStartFor('C1'));
+registerPart('C2', Z, 0.55, tStartFor('C2'));
+registerPart('C3', tHat, 0.7, tStartFor('C3'));
+registerPart('C4', tHat, 0.95, tStartFor('C4'));
+registerPart('C5', rHat.clone().multiplyScalar(-1).add(tHat.clone().multiplyScalar(0.2)), 0.55, tStartFor('C5'));
+registerPart('C6', Z.clone().multiplyScalar(-1), 0.4, tStartFor('C6'));
+
+registerPart('D1', new THREE.Vector3(0.1,1,0.15), 1.0, tStartFor('D1'));
+registerPart('D2', rHat, 0.6, tStartFor('D2'));
+registerPart('D3', new THREE.Vector3(0,1,0), 0.35, tStartFor('D3'));
+registerPart('D4', new THREE.Vector3(0,-1,0), 0.3, tStartFor('D4'));
+registerPart('D5', rHat.clone().multiplyScalar(-1), 0.3, tStartFor('D5'));
+
+registerPart('E1', Z, 0.9, tStartFor('E1'));
+registerPart('E2', Z, 1.15, tStartFor('E2'));
+registerPart('E3', Z.clone().multiplyScalar(-1), 0.55, tStartFor('E3'));
+registerPart('E4', new THREE.Vector3(-1,-0.3,0.2), 0.45, tStartFor('E4'));
+registerPart('E5', new THREE.Vector3(0,1,0), 0.25, tStartFor('E5'));
+
+registerPart('F1', new THREE.Vector3(0,0,1), 0.5, tStartFor('F1'));
+registerPart('F2', new THREE.Vector3(1,0.4,0), 0.35, tStartFor('F2'));
+registerPart('F3', new THREE.Vector3(0,0,-1), 0.35, tStartFor('F3'));
+registerPart('F4', new THREE.Vector3(0,1,0), 0.3, tStartFor('F4'));
+registerPart('F5', new THREE.Vector3(0,0,1), 0.35, tStartFor('F5'));
+registerPart('F6', new THREE.Vector3(0,0,-1), 0.5, tStartFor('F6'));
+registerPart('F7', new THREE.Vector3(0,1,0.3), 0.4, tStartFor('F7'));
+registerPart('F8', new THREE.Vector3(0,1,0), 0.6, tStartFor('F8'));
+registerPart('F9', new THREE.Vector3(0,1,0), 0.45, tStartFor('F9'));
+registerPart('F10', new THREE.Vector3(0,1,0), 0.35, tStartFor('F10'));
+registerPart('F11', new THREE.Vector3(0,-1,0.3), 0.3, tStartFor('F11'));
+
+/* ================================================================================
+   PARTE 7 — STATO APPLICAZIONE
+   ================================================================================ */
+const state = {
+  lang: 'both',            // 'it' | 'en' | 'both'
+  labelsMode: 'focus',     // 'none' | 'focus' | 'all'
+  explodeTarget: 0,        // 0..100 (slider)
+  explodeCurrent: 0,
+  mode: 'explode',         // 'explode' | 'guided'
+  direction: 'smontaggio', // 'smontaggio' | 'rimontaggio'
+  stepIndex: 0,
+  selectedId: null,
+  focusIds: null,          // Set<id> | null (null = mostra tutti a piena opacità)
+  groupVisible: { A:true,B:true,C:true,D:true,E:true,F:true },
+  camGoal: null,           // { pos:Vector3, target:Vector3 } | null
+};
+
+function orderedSteps(){
+  return state.direction === 'smontaggio' ? STEPS : STEPS.slice().reverse();
+}
+function currentStep(){ return orderedSteps()[state.stepIndex]; }
+
+/* ================================================================================
+   PARTE 8 — INTERAZIONE: raycasting, hover, click
+   ================================================================================ */
+const raycaster = new THREE.Raycaster();
+const pointerNdc = new THREE.Vector2();
+let isDragging = false, downX=0, downY=0;
+
+function allInteractiveMeshes(){
+  const list = [];
+  scene.traverse(o=>{ if(o.isMesh && o.userData.partId) list.push(o); });
+  return list;
+}
+
+function pickAt(clientX, clientY){
+  const rect = canvas.getBoundingClientRect();
+  pointerNdc.x = ((clientX-rect.left)/rect.width)*2-1;
+  pointerNdc.y = -((clientY-rect.top)/rect.height)*2+1;
+  raycaster.setFromCamera(pointerNdc, camera);
+  const hits = raycaster.intersectObjects(allInteractiveMeshes(), false);
+  for(const h of hits){
+    const id = h.object.userData.partId;
+    if(partsById[id] && state.groupVisible[partsById[id].def.group]) return id;
+  }
+  return null;
+}
+
+canvas.addEventListener('pointerdown', (e)=>{ isDragging=false; downX=e.clientX; downY=e.clientY; });
+canvas.addEventListener('pointermove', (e)=>{
+  if(Math.abs(e.clientX-downX)>6 || Math.abs(e.clientY-downY)>6) isDragging = true;
+  if(e.pointerType === 'mouse'){
+    const id = pickAt(e.clientX, e.clientY);
+    showTooltip(id, e.clientX, e.clientY);
+    canvas.style.cursor = id ? 'pointer' : 'grab';
+  }
+});
+canvas.addEventListener('pointerup', (e)=>{
+  if(isDragging) return;
+  const id = pickAt(e.clientX, e.clientY);
+  if(id) selectPart(id);
+});
+canvas.addEventListener('pointerleave', ()=> hideTooltip());
+
+const tooltipEl = document.getElementById('tooltip');
+function showTooltip(id, x, y){
+  if(!id){ hideTooltip(); return; }
+  const p = partsById[id];
+  tooltipEl.textContent = nameFor(p.def) + '  ['+id+']';
+  tooltipEl.style.left = x+'px';
+  tooltipEl.style.top = y+'px';
+  tooltipEl.classList.remove('hidden');
+}
+function hideTooltip(){ tooltipEl.classList.add('hidden'); }
+
+function nameFor(def){
+  if(state.lang==='it') return def.it;
+  if(state.lang==='en') return def.en;
+  return def.it + ' / ' + def.en;
+}
+
+/* ================================================================================
+   PARTE 9 — SELEZIONE PEZZO E PANNELLO LATERALE
+   ================================================================================ */
+const sidePanel = document.getElementById('sidePanel');
+const sideBody = document.getElementById('sideBody');
+
+function selectPart(id){
+  state.selectedId = id;
+  state.focusIds = new Set([id]);
+  renderSidePanel(id);
+  sidePanel.classList.add('open');
+  updateFocusVisuals();
+}
+function clearSelection(){
+  state.selectedId = null;
+  state.focusIds = state.mode==='guided' ? state.focusIds : null;
+  updateFocusVisuals();
+}
+
+function renderSidePanel(id){
+  const p = partsById[id];
+  const d = p.def;
+  const g = GROUPS[d.group];
+  let html = '';
+  html += '<div class="sp-row"><span class="sp-id">'+id+'</span> <span class="badge group">'+g.it+' / '+g.en+'</span></div>';
+  html += '<div class="sp-row"><div class="sp-label">Nome</div><div class="sp-value"><b>'+d.it+'</b><br/><span style="color:var(--muted)">'+d.en+'</span></div></div>';
+  html += '<div class="sp-row"><div class="sp-label">Funzione</div><div class="sp-value">'+ (state.lang==='en'? d.func_en : d.func_it) + (state.lang==='both' ? '<br/><span style="color:var(--muted)">'+d.func_en+'</span>' : '') +'</div></div>';
+  html += '<div class="sp-row"><div class="sp-label">Attrezzo necessario</div><div class="sp-value">'+ d.tool_it + (state.lang!=='it' ? ' <span style="color:var(--muted)">('+d.tool_en+')</span>':'') +'</div></div>';
+  html += '<div class="sp-row"><div class="sp-label">Coppia di serraggio</div><div class="sp-value">'+ (d.torque ? d.torque : '— non applicabile —') +'</div></div>';
+  html += '<div class="sp-row"><div class="sp-label">Note</div><div class="sp-value">'+ d.notes_it + (state.lang!=='it' ? '<br/><span style="color:var(--muted)">'+d.notes_en+'</span>':'') +'</div></div>';
+  if(d.single) html += '<span class="badge danger">⚠ DA SOSTITUIRE SEMPRE</span>';
+  if(d.orient) html += '<span class="badge warn">⚠ ATTENZIONE ALL\'ORIENTAMENTO</span>';
+  sideBody.innerHTML = html;
+}
+
+document.getElementById('btnCloseSide').addEventListener('click', ()=>{
+  sidePanel.classList.remove('open');
+  clearSelection();
+});
+
+/* ================================================================================
+   PARTE 10 — EVIDENZIAZIONE (focus/dim), FILTRI GRUPPO, ETICHETTE
+   ================================================================================ */
+function updateFocusVisuals(){
+  Object.keys(partsById).forEach(id=>{
+    const p = partsById[id];
+    let targetOp = 1;
+    if(state.focusIds && !state.focusIds.has(id)) targetOp = 0.18;
+    p.obj.traverse(o=>{ if(o.isMesh) o.material.opacity = targetOp; });
+  });
+}
+
+// ---- filtri gruppo (chip) ----
+const groupFiltersEl = document.getElementById('groupFilters');
+Object.keys(GROUPS).forEach(gk=>{
+  const chip = document.createElement('div');
+  chip.className = 'chip';
+  chip.innerHTML = '<span class="dot" style="background:#'+GROUPS[gk].color.toString(16).padStart(6,'0')+'"></span><span>'+gk+' · '+GROUPS[gk].it+'</span>';
+  chip.addEventListener('click', ()=>{
+    state.groupVisible[gk] = !state.groupVisible[gk];
+    chip.classList.toggle('off', !state.groupVisible[gk]);
+    applyGroupVisibility();
+  });
+  groupFiltersEl.appendChild(chip);
+});
+function applyGroupVisibility(){
+  Object.keys(partsById).forEach(id=>{
+    const p = partsById[id];
+    p.obj.visible = !!state.groupVisible[p.def.group];
+  });
+}
+
+// ---- etichette 3D con leader line (billboard via overlay HTML+SVG) ----
+const labelsLayer = document.getElementById('labelsLayer');
+const leaderSvg = document.getElementById('leaderSvg');
+const labelEls = {}; // id -> {div, line}
+Object.keys(partsById).forEach(id=>{
+  const div = document.createElement('div');
+  div.className = 'lbl';
+  div.addEventListener('click', ()=> selectPart(id));
+  labelsLayer.appendChild(div);
+  const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+  leaderSvg.appendChild(line);
+  labelEls[id] = { div, line };
+});
+
+function shouldShowLabel(id){
+  const p = partsById[id];
+  if(!state.groupVisible[p.def.group]) return false;
+  if(state.labelsMode === 'none') return false;
+  if(state.labelsMode === 'all') return true;
+  // 'focus': mostra solo il selezionato / gli evidenziati dallo step guidato
+  return state.focusIds ? state.focusIds.has(id) : false;
+}
+
+const tmpV = new THREE.Vector3();
+function updateLabels(){
+  const rect = canvas.getBoundingClientRect();
+  Object.keys(partsById).forEach(id=>{
+    const p = partsById[id];
+    const els = labelEls[id];
+    if(!shouldShowLabel(id)){ els.div.style.display='none'; els.line.style.display='none'; return; }
+    tmpV.copy(p.anchor).add(p.obj.position);
+    tmpV.project(camera);
+    if(tmpV.z > 1){ els.div.style.display='none'; els.line.style.display='none'; return; }
+    const sx = (tmpV.x*0.5+0.5)*rect.width;
+    const sy = (-tmpV.y*0.5+0.5)*rect.height;
+    const lx = sx + 46, ly = sy - 30;
+    els.div.style.display='block';
+    els.div.style.left = lx+'px';
+    els.div.style.top = ly+'px';
+    els.div.classList.toggle('focus', state.focusIds ? state.focusIds.has(id) : false);
+    const d = p.def;
+    els.div.innerHTML = '<b>'+id+'</b> '+nameFor(d);
+    els.line.style.display='block';
+    els.line.setAttribute('x1', sx); els.line.setAttribute('y1', sy);
+    els.line.setAttribute('x2', lx); els.line.setAttribute('y2', ly);
+  });
+}
+
+/* ================================================================================
+   PARTE 11 — UI: tabs, slider esploso, lingua, etichette, fullscreen, info
+   ================================================================================ */
+const tabExplode = document.getElementById('tabExplode');
+const tabGuided = document.getElementById('tabGuided');
+const tabReset = document.getElementById('tabReset');
+const explodePane = document.getElementById('explodePane');
+const guidedPane = document.getElementById('guidedPane');
+
+tabExplode.addEventListener('click', ()=>{
+  state.mode='explode'; tabExplode.classList.add('active'); tabGuided.classList.remove('active');
+  explodePane.classList.add('active'); guidedPane.classList.remove('active');
+  state.focusIds = state.selectedId ? new Set([state.selectedId]) : null;
+  state.camGoal = null;
+  updateFocusVisuals();
+});
+tabGuided.addEventListener('click', ()=>{
+  state.mode='guided'; tabGuided.classList.add('active'); tabExplode.classList.remove('active');
+  guidedPane.classList.add('active'); explodePane.classList.remove('active');
+  goToStep(state.stepIndex, true);
+});
+tabReset.addEventListener('click', resetView);
+
+function resetView(){
+  controls.target.copy(DEFAULT_TARGET);
+  camera.position.copy(DEFAULT_CAM_POS);
+  state.camGoal = null;
+  state.explodeTarget = state.mode==='guided' ? currentStep().explode : 0;
+  document.getElementById('explodeSlider').value = state.explodeTarget;
+}
+
+document.getElementById('explodeSlider').addEventListener('input', (e)=>{
+  state.explodeTarget = +e.target.value;
+});
+
+document.getElementById('btnLang').addEventListener('click', ()=>{
+  state.lang = state.lang==='both' ? 'it' : (state.lang==='it' ? 'en' : 'both');
+  document.getElementById('btnLang').textContent = state.lang.toUpperCase()==='BOTH' ? 'IT/EN' : state.lang.toUpperCase();
+  if(state.selectedId) renderSidePanel(state.selectedId);
+  if(state.mode==='guided') renderStepCard();
+});
+
+const btnLabels = document.getElementById('btnLabels');
+btnLabels.addEventListener('click', ()=>{
+  state.labelsMode = state.labelsMode==='focus' ? 'all' : (state.labelsMode==='all' ? 'none' : 'focus');
+  btnLabels.classList.toggle('on', state.labelsMode!=='none');
+  btnLabels.textContent = state.labelsMode==='all' ? '🏷️ Tutte' : (state.labelsMode==='focus' ? '🏷️ Selez.' : '🏷️ Off');
+});
+
+document.getElementById('btnFullscreen').addEventListener('click', ()=>{
+  if(!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{});
+  else document.exitFullscreen();
+});
+
+const infoModal = document.getElementById('infoModal');
+document.getElementById('btnInfo').addEventListener('click', ()=> infoModal.classList.add('open'));
+document.getElementById('btnCloseInfo').addEventListener('click', ()=> infoModal.classList.remove('open'));
+infoModal.addEventListener('click', (e)=>{ if(e.target===infoModal) infoModal.classList.remove('open'); });
+
+/* ================================================================================
+   PARTE 12 — MODALITA' SEQUENZA GUIDATA
+   ================================================================================ */
+const btnDirSmontaggio = document.getElementById('btnDirSmontaggio');
+const btnDirRimontaggio = document.getElementById('btnDirRimontaggio');
+const stepPill = document.getElementById('stepPill');
+const stepCard = document.getElementById('stepCard');
+const btnPrev = document.getElementById('btnPrev');
+const btnPlay = document.getElementById('btnPlay');
+
+btnDirSmontaggio.addEventListener('click', ()=> setDirection('smontaggio'));
+btnDirRimontaggio.addEventListener('click', ()=> setDirection('rimontaggio'));
+function setDirection(dir){
+  state.direction = dir;
+  btnDirSmontaggio.classList.toggle('active', dir==='smontaggio');
+  btnDirRimontaggio.classList.toggle('active', dir==='rimontaggio');
+  state.stepIndex = 0;
+  goToStep(0, true);
+}
+
+btnPrev.addEventListener('click', ()=> goToStep(state.stepIndex-1, true));
+btnPlay.addEventListener('click', ()=> goToStep(state.stepIndex+1, true));
+
+function goToStep(idx, moveCamera){
+  const steps = orderedSteps();
+  idx = Math.max(0, Math.min(steps.length-1, idx));
+  state.stepIndex = idx;
+  const step = steps[idx];
+  state.focusIds = new Set(step.ids.filter(id=>partsById[id]));
+  state.explodeTarget = step.explode;
+  document.getElementById('explodeSlider').value = step.explode;
+  updateFocusVisuals();
+  renderStepCard();
+  btnPrev.disabled = idx===0;
+  btnPlay.disabled = idx===steps.length-1;
+  stepPill.textContent = 'Step '+(idx+1)+' / '+steps.length;
+  if(moveCamera) focusCameraOnIds(step.ids);
+}
+
+function renderStepCard(){
+  const step = currentStep();
+  const rimontaggio = state.direction==='rimontaggio';
+  const title = rimontaggio ? (state.lang==='en'?step.remount_en:step.remount_it) : (state.lang==='en'?step.title_en:step.title_it);
+  const titleAlt = state.lang==='both' ? (rimontaggio? step.remount_en : step.title_en) : null;
+
+  // dati aggregati dei pezzi coinvolti (attrezzo/coppia) per lo step
+  const involved = step.ids.map(id=>partsById[id]).filter(Boolean).map(p=>p.def);
+  const tool = step.tool_it || (involved.find(d=>d.tool_it && d.tool_it!=='—') || {}).tool_it || '—';
+  const toolEn = step.tool_en || (involved.find(d=>d.tool_en && d.tool_en!=='—') || {}).tool_en || '—';
+  const torque = step.torque || (involved.find(d=>d.torque) || {}).torque || null;
+
+  let html = '<h3>'+(rimontaggio?'🔧 ':'🔩 ')+title+'</h3>';
+  if(titleAlt) html += '<div style="color:var(--muted); font-size:12px; margin-bottom:4px;">'+titleAlt+'</div>';
+  html += '<div class="meta">';
+  html += '<b>Pezzi</b><span>'+step.ids.map(id=>'<span class="sp-id">'+id+'</span>').join(' ')+'</span>';
+  html += '<b>Attrezzo</b><span>'+(state.lang==='en'?toolEn:tool)+(state.lang==='both'?' / '+toolEn:'')+'</span>';
+  html += '<b>Coppia</b><span>'+(torque? torque : '— non applicabile —')+'</span>';
+  html += '</div>';
+  if(step.warn_it){
+    html += '<div class="callout warn">'+(state.lang==='en'?step.warn_en:step.warn_it)+'</div>';
+  }
+  if(rimontaggio && step.n===5){
+    html += '<div class="callout danger">'+(state.lang==='en'
+      ? 'Compress the piston with the bleed valve OPEN, otherwise fluid overflows the reservoir.'
+      : '⚠️ Comprimere il pistoncino con la valvola di spurgo APERTA, altrimenti il liquido trabocca dal serbatoio.')+'</div>';
+  }
+  if(rimontaggio && step.n===1){
+    html += '<div class="callout danger">'+(state.lang==='en'
+      ? '✅ After reassembly: pump the pedal until it feels firm BEFORE moving the bike.'
+      : '✅ Dopo il rimontaggio: pompare il pedale finché non torna duro PRIMA di muovere la moto.')+'</div>';
+  }
+  stepCard.innerHTML = html;
+}
+
+function focusCameraOnIds(ids){
+  const parts = ids.map(id=>partsById[id]).filter(Boolean);
+  if(!parts.length) return;
+  // unione dei bounding box (centro + size) dei pezzi coinvolti, nella posizione esplosa corrente
+  const box = new THREE.Box3();
+  parts.forEach(p=>{
+    const c = p.anchor.clone().add(p.obj.position);
+    const half = p.size.clone().multiplyScalar(0.5);
+    box.expandByPoint(c.clone().sub(half));
+    box.expandByPoint(c.clone().add(half));
+  });
+  const center = box.getCenter(new THREE.Vector3());
+  const diag = box.getSize(new THREE.Vector3()).length();
+  const dist = Math.max(1.4, diag*1.5 + 0.9);
+  const offset = new THREE.Vector3(1.3, 0.9, 1.5).normalize().multiplyScalar(dist);
+  state.camGoal = { pos: center.clone().add(offset), target: center.clone() };
+}
+
+/* ================================================================================
+   PARTE 13 — LOOP DI RENDER: damping esplosione, camera, aggiornamento etichette
+   ================================================================================ */
+function easeInOutCubic(t){ return t<0.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2; }
+
+function resize(){
+  const rect = document.getElementById('viewport').getBoundingClientRect();
+  renderer.setSize(rect.width, rect.height, false);
+  camera.aspect = rect.width/Math.max(1,rect.height);
+  camera.updateProjectionMatrix();
+}
+window.addEventListener('resize', resize);
+
+let lastT = performance.now();
+function animate(now){
+  const dt = Math.min(0.05, (now-lastT)/1000); lastT = now;
+
+  // esplosione: damping verso il target impostato da slider o step guidato
+  state.explodeCurrent += (state.explodeTarget - state.explodeCurrent) * Math.min(1, dt*7);
+
+  Object.keys(partsById).forEach(id=>{
+    const p = partsById[id];
+    const tRaw = state.explodeCurrent/100;
+    const tLocal = Math.max(0, Math.min(1, (tRaw - p.tStart) / Math.max(0.001, 1-p.tStart)));
+    const eased = easeInOutCubic(tLocal);
+    const target = p.dir.clone().multiplyScalar(p.dist*eased);
+    p.obj.position.lerp(target, Math.min(1, dt*8));
+  });
+
+  // camera: se impostato un goal (step guidato), avvicinarsi progressivamente
+  if(state.camGoal){
+    camera.position.lerp(state.camGoal.pos, Math.min(1, dt*3.2));
+    controls.target.lerp(state.camGoal.target, Math.min(1, dt*3.2));
+    if(camera.position.distanceTo(state.camGoal.pos) < 0.02) state.camGoal = null;
+  }
+
+  controls.update();
+  updateLabels();
+  renderer.render(scene, camera);
+  requestAnimationFrame(animate);
+}
+
+/* ================================================================================
+   PARTE 14 — INIZIALIZZAZIONE
+   ================================================================================ */
+function init(){
+  resize();
+  camera.position.copy(DEFAULT_CAM_POS);
+  applyGroupVisibility();
+  updateFocusVisuals();
+  goToStep(0, false); // prepara i dati dello step 1 senza spostare la camera
+  state.mode = 'explode'; // parte in modalità esplosa libera
+  state.focusIds = null;
+  updateFocusVisuals();
+  document.getElementById('explodeSlider').value = 0;
+  state.explodeTarget = 0;
+  requestAnimationFrame(animate);
+}
+init();
+</script>
+</body>
+</html>
