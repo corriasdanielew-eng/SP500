@@ -1402,11 +1402,13 @@
    ================================================================================ */
 
 const GROUPS = {
-  A: { it:'Corpo pinza',            en:'Caliper body',        color:0xb9c0c9 },
-  B: { it:'Staffa e scorrimento',   en:'Bracket & sliding',   color:0x4a5561 },
+  // colori tarati sulle foto reali della pinza (Nissin grigio-tortora opaco,
+  // staffa più scura ma stessa famiglia di grigio-caldo, disco bruno-ruggine)
+  A: { it:'Corpo pinza',            en:'Caliper body',        color:0x8f8a80 },
+  B: { it:'Staffa e scorrimento',   en:'Bracket & sliding',   color:0x4a4640 },
   C: { it:'Pastiglie e ritegno',    en:'Pads & retention',    color:0xe2932f },
   D: { it:'Linea idraulica',        en:'Hydraulic line',      color:0xc25a3a },
-  E: { it:'Disco e ABS',            en:'Disc & ABS',          color:0x9c7a5c },
+  E: { it:'Disco e ABS',            en:'Disc & ABS',          color:0x8a6a4d },
   F: { it:'Comando (pedale/pompa)', en:'Actuation (pedal/MC)',color:0x33b3a6 },
 };
 
@@ -1833,19 +1835,23 @@ function waveDiscGeometry(rOuterBase, waveAmp, waveN, rInner, thickness, lighten
   }
   shape.holes.push(hole);
   if(lightenHoles){
-    const holeR = rOuterBase*0.09;
-    const ringR = (rInner + rOuterBase*0.62)/1.35;
-    for(let i=0;i<10;i++){
-      const th = (i/10)*Math.PI*2 + 0.3;
-      const cx = ringR*Math.cos(th), cy = ringR*Math.sin(th);
-      const p = new THREE.Path();
-      for(let j=0;j<=16;j++){
-        const a = (j/16)*Math.PI*2;
-        const x = cx + holeR*Math.cos(a), y = cy + holeR*Math.sin(a);
-        if(j===0) p.moveTo(x,y); else p.lineTo(x,y);
+    // due corone di fori (come nelle foto reali del disco "wave"): una più
+    // esterna vicino al bordo ondulato, una più interna verso il mozzo.
+    const addRing = (ringR, holeR, n, phase)=>{
+      for(let i=0;i<n;i++){
+        const th = (i/n)*Math.PI*2 + phase;
+        const cx = ringR*Math.cos(th), cy = ringR*Math.sin(th);
+        const p = new THREE.Path();
+        for(let j=0;j<=14;j++){
+          const a = (j/14)*Math.PI*2;
+          const x = cx + holeR*Math.cos(a), y = cy + holeR*Math.sin(a);
+          if(j===0) p.moveTo(x,y); else p.lineTo(x,y);
+        }
+        shape.holes.push(p);
       }
-      shape.holes.push(p);
-    }
+    };
+    addRing((rInner + rOuterBase*0.62)/1.35, rOuterBase*0.075, waveN, 0.3);
+    addRing(rOuterBase*0.72, rOuterBase*0.045, waveN, 0.3 + Math.PI/waveN);
   }
   const geo = new THREE.ExtrudeGeometry(shape, { depth: thickness, bevelEnabled:false, curveSegments: 64 });
   geo.translate(0,0,-thickness/2);
@@ -1905,16 +1911,18 @@ function coilSpring(turns, radius, height, tubeR, color){
 (function buildGroupA(){
   const colA = GROUPS.A.color;
 
-  // A1 — corpo pinza: blocco inboard (piston side) + blocco outboard + ponte
+  // A1 — corpo pinza: blocco inboard (piston side) + blocco outboard + ponte,
+  // dimensionati per leggersi come un unico blocco compatto (rif. foto reali
+  // pinza Nissin: corpo tozzo e squadrato, non una "C" sottile e alta)
   const gA1 = newPartGroup('A1');
-  const innerBlockGeo = new THREE.BoxGeometry(0.62, 0.5, 0.40);
-  addMesh(gA1, innerBlockGeo, mat(colA), callPt(-0.06,0,-0.42));
-  const outerBlockGeo = new THREE.BoxGeometry(0.5, 0.42, 0.24);
-  addMesh(gA1, outerBlockGeo, mat(shade(colA,-0.05)), callPt(-0.02,0, 0.34));
-  const bridgeGeo = new THREE.BoxGeometry(0.30, 0.56, 0.82);
-  addMesh(gA1, bridgeGeo, mat(shade(colA,0.05)), callPt(0.30,0,0.04));
-  // piccolo logo stilizzato (blocchetto) sul fianco esterno
-  addMesh(gA1, new THREE.BoxGeometry(0.22,0.10,0.02), mat(0x0e0e0e,{metalness:0.2,roughness:0.6}), callPt(-0.06,0.28,-0.20));
+  const innerBlockGeo = new THREE.BoxGeometry(0.66, 0.56, 0.42);
+  addMesh(gA1, innerBlockGeo, mat(colA), callPt(-0.04,0,-0.41));
+  const outerBlockGeo = new THREE.BoxGeometry(0.56, 0.48, 0.26);
+  addMesh(gA1, outerBlockGeo, mat(shade(colA,-0.04)), callPt(-0.02,0, 0.33));
+  const bridgeGeo = new THREE.BoxGeometry(0.42, 0.42, 0.86);
+  addMesh(gA1, bridgeGeo, mat(shade(colA,0.04)), callPt(0.26,0,0.04));
+  // targhetta NISSIN sul fianco esterno (grande e centrata, come sul pezzo reale)
+  addMesh(gA1, new THREE.BoxGeometry(0.36,0.17,0.015), mat(0x2c2a26,{metalness:0.25,roughness:0.55}), callPt(-0.10,0,-0.615));
 
   // A2 — pistoncino (cilindro cavo lungo Z, dentro il blocco inboard)
   const gA2 = newPartGroup('A2');
@@ -2074,8 +2082,8 @@ let refGroup;
 (function buildGroupE(){
   // E1 — disco freno "wave" con fori di alleggerimento
   const gE1 = newPartGroup('E1');
-  const discGeo = waveDiscGeometry(R, R*0.045, 9, HUB_R, DISC_THICK, true);
-  addMesh(gE1, discGeo, mat(0x8a8a8a,{metalness:0.75,roughness:0.55}), discPt(0,0,0));
+  const discGeo = waveDiscGeometry(R, R*0.05, 10, HUB_R, DISC_THICK, true);
+  addMesh(gE1, discGeo, mat(0x8a6a4d,{metalness:0.55,roughness:0.65}), discPt(0,0,0));
 
   // E2 — viti fissaggio disco (×6, cerchio bulloni sul mozzo)
   const gE2 = newPartGroup('E2');
